@@ -11,7 +11,7 @@ pub enum TryBankViewFromSliceError {
     UnknownDataType,
     /// Integer representation of the size field does not match the size of the data slice.
     SizeMismatch,
-    /// Data slice size is not divisible by [`DataType::size()`].
+    /// Data slice length is not divisible by [`DataType::size()`].
     IncompleteData,
 }
 impl fmt::Display for TryBankViewFromSliceError {
@@ -37,7 +37,7 @@ impl From<TryDataTypeFromUnsignedError> for TryBankViewFromSliceError {
 
 /// An immutable view to a 16-bit data bank.
 ///
-/// A 16-bit data bank is defines as an 8 bytes header followed by its raw data. The binary
+/// A 16-bit data bank is defined as an 8 bytes header followed by its raw data. The binary
 /// representation of a 16-bit data bank is:
 /// - 4 bytes bank name. Each byte is a valid ASCII alphanumeric character.
 /// - 2 bytes unsigned integer representation of the [`DataType`].
@@ -263,7 +263,7 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
 
 /// An immutable view to a 32-bit data bank.
 ///
-/// A 32-bit data bank is defines as an 12 bytes header followed by its raw data. The binary
+/// A 32-bit data bank is defined as a 12 bytes header followed by its raw data. The binary
 /// representation of a 32-bit data bank is:
 /// - 4 bytes bank name. Each byte is a valid ASCII alphanumeric character.
 /// - 4 bytes unsigned integer representation of the [`DataType`].
@@ -426,8 +426,8 @@ impl<'a> Bank32View<'a> {
         BankSlice::data_slice(self)
     }
 
-    /// If the length of the [`Bank16View::data_slice()`] is not a multiple of 8 bytes, the
-    /// subsequent `n = Bank16View::padding()` bytes are reserved until the next multiple of 8.
+    /// If the length of the [`Bank32View::data_slice()`] is not a multiple of 8 bytes, the
+    /// subsequent `n = Bank32View::padding()` bytes are reserved until the next multiple of 8.
     ///
     /// These bytes are not part of the data bank slice; it is simply an indication of the number
     /// of reserved bytes between this and the next data bank.
@@ -489,7 +489,7 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
 
 /// An immutable view to a 32-bit bank 64-bit aligned.
 ///
-/// A 32-bit data bank is defines as an 16 bytes header followed by its raw data. The binary
+/// A 32-bit data bank is defined as a 16 bytes header followed by its raw data. The binary
 /// representation of a 32-bit data bank 64-bit aligned is:
 /// - 4 bytes bank name. Each byte is a valid ASCII alphanumeric character.
 /// - 4 bytes unsigned integer representation of the [`DataType`].

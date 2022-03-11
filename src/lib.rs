@@ -13,7 +13,7 @@ const BANK_PADDING: usize = 8;
 pub mod read;
 
 /// Possible data types stored inside a data bank
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum DataType {
     /// Unsigned byte.
     Byte,
@@ -44,8 +44,6 @@ impl DataType {
     /// fixed known size; it is determined by the user.
     ///
     /// # Examples
-    ///
-    /// use midasio::DataType;
     ///
     /// ```
     /// use midasio::DataType;
