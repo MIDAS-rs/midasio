@@ -42,6 +42,17 @@ pub enum DataType {
 impl DataType {
     /// Returns the size of a [`DataType`] in bytes. Note that e.g. [`DataType::Struct`] doesn't have a
     /// fixed known size; it is determined by the user.
+    ///
+    /// # Examples
+    ///
+    /// use midasio::DataType;
+    ///
+    /// ```
+    /// use midasio::DataType;
+    ///
+    /// assert_eq!(DataType::Byte.size().unwrap(), 1);
+    /// assert!(DataType::Struct.size().is_none());
+    /// ```
     pub fn size(&self) -> Option<usize> {
         match *self {
             DataType::Byte => Some(size_of::<u8>()),
@@ -101,7 +112,7 @@ macro_rules! impl_try_type_from {
 }
 impl_try_type_from!(u8, u16, u32, u64, u128);
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 enum Endianness {
     LittleEndian,
     BigEndian,
