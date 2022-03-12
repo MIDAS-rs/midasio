@@ -32,6 +32,10 @@ fn invalid_le_bank16_views() {
     let bank = Bank16View::try_from_le_bytes(&buffer);
     assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
 
+    let buffer = [66u8, 65, 78, 75, 4, 0, 1, 0, 100];
+    let bank = Bank16View::try_from_le_bytes(&buffer);
+    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
+
     let buffer = [66u8, 65, 78, 75, 20, 0, 1, 0, 1];
     let bank = Bank16View::try_from_le_bytes(&buffer);
     assert!(matches!(
@@ -71,6 +75,10 @@ fn invalid_be_bank16_views() {
     let buffer = [66u8, 65, 200, 75, 0, 1, 0, 1, 1];
     let bank = Bank16View::try_from_be_bytes(&buffer);
     assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+
+    let buffer = [66u8, 65, 78, 75, 0, 4, 0, 1, 100];
+    let bank = Bank16View::try_from_be_bytes(&buffer);
+    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
 
     let buffer = [66u8, 65, 78, 75, 0, 20, 0, 1, 1];
     let bank = Bank16View::try_from_be_bytes(&buffer);
@@ -172,6 +180,9 @@ fn iterator_bank16_views() {
         let num = u8::from_le_bytes(num.try_into().unwrap());
         assert_eq!(1, num);
     }
+    let buffer = [66u8, 65, 78, 75, 14, 0, 5, 0, 1, 1, 1, 1, 1];
+    let bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
+    assert_eq!(5, bank.into_iter().count());
 }
 
 #[test]
@@ -205,6 +216,10 @@ fn invalid_le_bank32_views() {
     let buffer = [66u8, 65, 200, 75, 1, 0, 0, 0, 1, 0, 0, 0, 1];
     let bank = Bank32View::try_from_le_bytes(&buffer);
     assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+
+    let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 1, 0, 0, 0, 100];
+    let bank = Bank32View::try_from_le_bytes(&buffer);
+    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 0, 0, 1, 0, 0, 0, 1];
     let bank = Bank32View::try_from_le_bytes(&buffer);
@@ -245,6 +260,10 @@ fn invalid_be_bank32_views() {
     let buffer = [66u8, 65, 200, 75, 0, 0, 0, 1, 0, 0, 0, 1, 1];
     let bank = Bank32View::try_from_be_bytes(&buffer);
     assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+
+    let buffer = [66u8, 65, 78, 75, 0, 0, 0, 4, 0, 0, 0, 1, 100];
+    let bank = Bank32View::try_from_be_bytes(&buffer);
+    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 20, 0, 0, 0, 1, 1];
     let bank = Bank32View::try_from_be_bytes(&buffer);
@@ -352,6 +371,9 @@ fn iterator_bank32_views() {
         let num = u8::from_le_bytes(num.try_into().unwrap());
         assert_eq!(1, num);
     }
+    let buffer = [66u8, 65, 78, 75, 14, 0, 0, 0, 5, 0, 0, 0, 1, 1, 1, 1, 1];
+    let bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
+    assert_eq!(5, bank.into_iter().count());
 }
 
 #[test]
@@ -385,6 +407,10 @@ fn invalid_le_bank32a_views() {
     let buffer = [66u8, 65, 200, 75, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
     assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+
+    let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 100];
+    let bank = Bank32AView::try_from_le_bytes(&buffer);
+    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
@@ -425,6 +451,10 @@ fn invalid_be_bank32a_views() {
     let buffer = [66u8, 65, 200, 75, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
     assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+
+    let buffer = [66u8, 65, 78, 75, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0, 100];
+    let bank = Bank32AView::try_from_be_bytes(&buffer);
+    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 20, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
@@ -554,6 +584,11 @@ fn iterator_bank32a_views() {
         let num = u8::from_le_bytes(num.try_into().unwrap());
         assert_eq!(1, num);
     }
+    let buffer = [
+        66u8, 65, 78, 75, 14, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+    ];
+    let bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
+    assert_eq!(5, bank.into_iter().count());
 }
 
 #[test]
@@ -684,7 +719,7 @@ fn is_b32a_bank_views() {
 
 #[test]
 fn iterator_bank_views() {
-    let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100];
+    let buffer = [66u8, 65, 78, 75, 14, 0, 1, 0, 100];
     let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
 
     let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];

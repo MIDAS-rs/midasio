@@ -256,7 +256,11 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = self.data_type().size().unwrap();
+        let item_size = match self.data_type().size() {
+            Some(size) => size,
+            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+            None => 1,
+        };
         self.data_slice().chunks_exact(item_size)
     }
 }
@@ -482,7 +486,11 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = self.data_type().size().unwrap();
+        let item_size = match self.data_type().size() {
+            Some(size) => size,
+            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+            None => 1,
+        };
         self.data_slice().chunks_exact(item_size)
     }
 }
@@ -709,7 +717,11 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = self.data_type().size().unwrap();
+        let item_size = match self.data_type().size() {
+            Some(size) => size,
+            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+            None => 1,
+        };
         self.data_slice().chunks_exact(item_size)
     }
 }
@@ -937,7 +949,11 @@ impl<'a> IntoIterator for &'a BankView<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = self.data_type().size().unwrap();
+        let item_size = match self.data_type().size() {
+            Some(size) => size,
+            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+            None => 1,
+        };
         self.data_slice().chunks_exact(item_size)
     }
 }
