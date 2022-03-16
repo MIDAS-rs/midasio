@@ -34,7 +34,10 @@ fn invalid_le_bank16_views() {
 
     let buffer = [66u8, 65, 78, 75, 4, 0, 1, 0, 100];
     let bank = Bank16View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
+    assert!(matches!(
+        bank,
+        Err(TryBankViewFromSliceError::IncompleteData)
+    ));
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 1, 0, 1];
     let bank = Bank16View::try_from_le_bytes(&buffer);
@@ -78,7 +81,10 @@ fn invalid_be_bank16_views() {
 
     let buffer = [66u8, 65, 78, 75, 0, 4, 0, 1, 100];
     let bank = Bank16View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
+    assert!(matches!(
+        bank,
+        Err(TryBankViewFromSliceError::IncompleteData)
+    ));
 
     let buffer = [66u8, 65, 78, 75, 0, 20, 0, 1, 1];
     let bank = Bank16View::try_from_be_bytes(&buffer);
@@ -219,7 +225,10 @@ fn invalid_le_bank32_views() {
 
     let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 1, 0, 0, 0, 100];
     let bank = Bank32View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
+    assert!(matches!(
+        bank,
+        Err(TryBankViewFromSliceError::IncompleteData)
+    ));
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 0, 0, 1, 0, 0, 0, 1];
     let bank = Bank32View::try_from_le_bytes(&buffer);
@@ -263,7 +272,10 @@ fn invalid_be_bank32_views() {
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 4, 0, 0, 0, 1, 100];
     let bank = Bank32View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
+    assert!(matches!(
+        bank,
+        Err(TryBankViewFromSliceError::IncompleteData)
+    ));
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 20, 0, 0, 0, 1, 1];
     let bank = Bank32View::try_from_be_bytes(&buffer);
@@ -410,7 +422,10 @@ fn invalid_le_bank32a_views() {
 
     let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 100];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
+    assert!(matches!(
+        bank,
+        Err(TryBankViewFromSliceError::IncompleteData)
+    ));
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
@@ -454,7 +469,10 @@ fn invalid_be_bank32a_views() {
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0, 100];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::IncompleteData)));
+    assert!(matches!(
+        bank,
+        Err(TryBankViewFromSliceError::IncompleteData)
+    ));
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 20, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_be_bytes(&buffer);

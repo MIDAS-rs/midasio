@@ -124,3 +124,14 @@ fn type_try_from_u128() {
         TryDataTypeFromUnsignedError
     ));
 }
+
+#[test]
+fn bank_type_try_from_u32() {
+    assert!(matches!(BankType::try_from(1u32).unwrap(), BankType::B16));
+    assert!(matches!(BankType::try_from(17u32).unwrap(), BankType::B32));
+    assert!(matches!(BankType::try_from(49u32).unwrap(), BankType::B32A));
+    assert!(matches!(
+        BankType::try_from(100u32).unwrap_err(),
+        TryBankTypeFromUnsignedError
+    ));
+}

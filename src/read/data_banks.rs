@@ -1,9 +1,9 @@
-use crate::{DataType, Endianness, TryDataTypeFromUnsignedError, BANK_PADDING};
+use crate::{DataType, Endianness, TryDataTypeFromUnsignedError};
 use std::{error::Error, fmt, slice::ChunksExact};
 
 /// The error type returned when conversion from
 /// [`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.html) to a [`BankView`] fails.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum TryBankViewFromSliceError {
     /// Bank name bytes are not ASCII alphanumeric characters.
     NonAsciiName,
@@ -224,9 +224,9 @@ impl<'a> Bank16View<'a> {
     /// assert_eq!(4, data_bank.padding());
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % BANK_PADDING;
+        let remainder = self.data_slice().len() % crate::BANK_PADDING;
         if remainder != 0 {
-            BANK_PADDING - remainder
+            crate::BANK_PADDING - remainder
         } else {
             0
         }
@@ -239,7 +239,7 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
     type IntoIter = ChunksExact<'a, u8>;
 
     /// Returns an iterator over the [`BankView::data_slice()`] in chunks of size
-    /// [`DataType::size()`].
+    /// [`DataType::size()`]. Iterate over individual bytes if the size is [`None`].
     ///
     /// # Examples
     ///
@@ -256,11 +256,8 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = match self.data_type().size() {
-            Some(size) => size,
-            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
-            None => 1,
-        };
+        //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+        let item_size = self.data_type().size().unwrap_or(1);
         self.data_slice().chunks_exact(item_size)
     }
 }
@@ -454,9 +451,9 @@ impl<'a> Bank32View<'a> {
     /// assert_eq!(4, data_bank.padding());
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % BANK_PADDING;
+        let remainder = self.data_slice().len() % crate::BANK_PADDING;
         if remainder != 0 {
-            BANK_PADDING - remainder
+            crate::BANK_PADDING - remainder
         } else {
             0
         }
@@ -469,7 +466,7 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
     type IntoIter = ChunksExact<'a, u8>;
 
     /// Returns an iterator over the [`BankView::data_slice()`] in chunks of size
-    /// [`DataType::size()`].
+    /// [`DataType::size()`]. Iterate over individual bytes if the size is [`None`].
     ///
     /// # Examples
     ///
@@ -486,11 +483,8 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = match self.data_type().size() {
-            Some(size) => size,
-            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
-            None => 1,
-        };
+        //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+        let item_size = self.data_type().size().unwrap_or(1);
         self.data_slice().chunks_exact(item_size)
     }
 }
@@ -685,9 +679,9 @@ impl<'a> Bank32AView<'a> {
     /// assert_eq!(4, data_bank.padding());
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % BANK_PADDING;
+        let remainder = self.data_slice().len() % crate::BANK_PADDING;
         if remainder != 0 {
-            BANK_PADDING - remainder
+            crate::BANK_PADDING - remainder
         } else {
             0
         }
@@ -700,7 +694,7 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
     type IntoIter = ChunksExact<'a, u8>;
 
     /// Returns an iterator over the [`BankView::data_slice()`] in chunks of size
-    /// [`DataType::size()`].
+    /// [`DataType::size()`]. Iterate over individual bytes if the size is [`None`].
     ///
     /// # Examples
     ///
@@ -717,11 +711,8 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = match self.data_type().size() {
-            Some(size) => size,
-            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
-            None => 1,
-        };
+        //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+        let item_size = self.data_type().size().unwrap_or(1);
         self.data_slice().chunks_exact(item_size)
     }
 }
@@ -845,9 +836,9 @@ impl<'a> BankView<'a> {
     /// assert_eq!(5, bank_16.padding());
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % BANK_PADDING;
+        let remainder = self.data_slice().len() % crate::BANK_PADDING;
         if remainder != 0 {
-            BANK_PADDING - remainder
+            crate::BANK_PADDING - remainder
         } else {
             0
         }
@@ -932,7 +923,7 @@ impl<'a> IntoIterator for &'a BankView<'a> {
     type IntoIter = ChunksExact<'a, u8>;
 
     /// Returns an iterator over the [`BankView::data_slice()`] in chunks of size
-    /// [`DataType::size()`].
+    /// [`DataType::size()`]. Iterate over individual bytes if the size is [`None`].
     ///
     /// # Examples
     ///
@@ -949,11 +940,8 @@ impl<'a> IntoIterator for &'a BankView<'a> {
     /// }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
-        let item_size = match self.data_type().size() {
-            Some(size) => size,
-            //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
-            None => 1,
-        };
+        //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
+        let item_size = self.data_type().size().unwrap_or(1);
         self.data_slice().chunks_exact(item_size)
     }
 }
@@ -969,7 +957,7 @@ impl<'a> IntoIterator for &'a BankView<'a> {
 //    types (see [`Type`] enum and the valid TryFrom conversions).
 // 4) The "size" field correctly matches the size of the data in the bank.
 // 5) The data slice should contain an integer number of [`DataType`] items.
-trait BankSlice {
+pub(in crate::read) trait BankSlice {
     // Number of ASCII alphanumeric characters that determine the name of the data bank.
     const NAME_LENGTH: usize;
     // Number of bytes that represent the [`DataType`] field in the data bank.
@@ -1020,10 +1008,10 @@ trait BankSlice {
 }
 
 impl BankSlice for Bank16View<'_> {
-    const NAME_LENGTH: usize = 4;
-    const TYPE_LENGTH: usize = 2;
-    const SIZE_LENGTH: usize = 2;
-    const FOOTER_LENGTH: usize = 0;
+    const NAME_LENGTH: usize = crate::B16_NAME_LENGTH;
+    const TYPE_LENGTH: usize = crate::B16_DATA_TYPE_LENGTH;
+    const SIZE_LENGTH: usize = crate::B16_SIZE_LENGTH;
+    const FOOTER_LENGTH: usize = crate::B16_RESERVED_LENGTH;
 
     fn data_bank_slice(&self) -> &[u8] {
         self.slice
@@ -1034,10 +1022,10 @@ impl BankSlice for Bank16View<'_> {
 }
 
 impl BankSlice for Bank32View<'_> {
-    const NAME_LENGTH: usize = 4;
-    const TYPE_LENGTH: usize = 4;
-    const SIZE_LENGTH: usize = 4;
-    const FOOTER_LENGTH: usize = 0;
+    const NAME_LENGTH: usize = crate::B32_NAME_LENGTH;
+    const TYPE_LENGTH: usize = crate::B32_DATA_TYPE_LENGTH;
+    const SIZE_LENGTH: usize = crate::B32_SIZE_LENGTH;
+    const FOOTER_LENGTH: usize = crate::B32_RESERVED_LENGTH;
 
     fn data_bank_slice(&self) -> &[u8] {
         self.slice
@@ -1048,10 +1036,10 @@ impl BankSlice for Bank32View<'_> {
 }
 
 impl BankSlice for Bank32AView<'_> {
-    const NAME_LENGTH: usize = 4;
-    const TYPE_LENGTH: usize = 4;
-    const SIZE_LENGTH: usize = 4;
-    const FOOTER_LENGTH: usize = 4;
+    const NAME_LENGTH: usize = crate::B32A_NAME_LENGTH;
+    const TYPE_LENGTH: usize = crate::B32A_DATA_TYPE_LENGTH;
+    const SIZE_LENGTH: usize = crate::B32A_SIZE_LENGTH;
+    const FOOTER_LENGTH: usize = crate::B32A_RESERVED_LENGTH;
 
     fn data_bank_slice(&self) -> &[u8] {
         self.slice

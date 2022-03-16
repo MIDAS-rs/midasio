@@ -5,6 +5,36 @@
 
 use std::{error::Error, fmt, mem::size_of};
 
+// MIDAS Event constants
+// Length in bytes of each field
+const EVENT_ID_LENGTH: usize = 2;
+const EVENT_TRIGGER_MASK_LENGTH: usize = 2;
+const EVENT_SERIAL_NUMBER_LENGTH: usize = 4;
+const EVENT_TIME_STAMP_LENGTH: usize = 4;
+const EVENT_SIZE_LENGTH: usize = 4;
+const EVENT_ALL_BANKS_SIZE_LENGTH: usize = 4;
+const EVENT_FLAGS_LENGTH: usize = 4;
+
+// Data Bank constants
+// 16-bit Banks
+// Length in bytes of each field
+const B16_NAME_LENGTH: usize = 4;
+const B16_DATA_TYPE_LENGTH: usize = 2;
+const B16_SIZE_LENGTH: usize = 2;
+const B16_RESERVED_LENGTH: usize = 0;
+// 32-bit Banks
+// Length in bytes of each field
+const B32_NAME_LENGTH: usize = 4;
+const B32_DATA_TYPE_LENGTH: usize = 4;
+const B32_SIZE_LENGTH: usize = 4;
+const B32_RESERVED_LENGTH: usize = 0;
+// 32-bit 64-bit aligned Banks
+// Length in bytes of each field
+const B32A_NAME_LENGTH: usize = 4;
+const B32A_DATA_TYPE_LENGTH: usize = 4;
+const B32A_SIZE_LENGTH: usize = 4;
+const B32A_RESERVED_LENGTH: usize = 4;
+
 // If the size of the data inside a bank is not a multiple of BANK_PADDING, the subsequent bytes up
 // until the next multiple of 8 are filled with random values.
 const BANK_PADDING: usize = 8;
@@ -69,7 +99,7 @@ impl DataType {
 }
 
 /// The error type returned when conversion from unsigned integer to [`DataType`] fails.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct TryDataTypeFromUnsignedError;
 impl fmt::Display for TryDataTypeFromUnsignedError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -114,6 +144,35 @@ impl_try_type_from!(u8, u16, u32, u64, u128);
 enum Endianness {
     LittleEndian,
     BigEndian,
+}
+
+// Possible variants of data banks.
+#[derive(Clone, Copy, Debug)]
+enum BankType {
+    B16,
+    B32,
+    B32A,
+}
+impl TryFrom<u32> for BankType {
+    type Error = TryBankTypeFromUnsignedError;
+    // These are the unsigned integer representation of the [`BankType`] in the flags field of the
+    // MIDAS events.
+    fn try_from(num: u32) -> Result<Self, Self::Error> {
+        match num {
+            1 => Ok(BankType::B16),
+            17 => Ok(BankType::B32),
+            49 => Ok(BankType::B32A),
+            _ => Err(TryBankTypeFromUnsignedError),
+        }
+    }
+}
+// The error type returned when conversion from unsigned integer to [`BankType`] fails.
+#[derive(Clone, Copy, Debug)]
+struct TryBankTypeFromUnsignedError;
+impl fmt::Display for TryBankTypeFromUnsignedError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "conversion from unknown value attempted")
+    }
 }
 
 #[cfg(test)]
