@@ -446,9 +446,9 @@ impl<'a> Iterator for BankViews<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
-            BankViews::B16(iter) => iter.next().map(|b| BankView::B16(b)),
-            BankViews::B32(iter) => iter.next().map(|b| BankView::B32(b)),
-            BankViews::B32A(iter) => iter.next().map(|b| BankView::B32A(b)),
+            BankViews::B16(iter) => iter.next().map(BankView::B16),
+            BankViews::B32(iter) => iter.next().map(BankView::B32),
+            BankViews::B32A(iter) => iter.next().map(BankView::B32A),
         }
     }
 }
@@ -926,8 +926,8 @@ fn error_in_event_view(event: &EventView) -> Option<TryEventViewFromSliceError> 
             }
         },
     };
-    while let Some(_) = all_banks.next() {}
-    if all_banks.remainder().len() != 0 {
+    for _ in all_banks.by_ref() {}
+    if !all_banks.remainder().is_empty() {
         return Some(TryEventViewFromSliceError::BadBank);
     }
     None
