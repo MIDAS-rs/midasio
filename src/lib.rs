@@ -5,6 +5,18 @@
 
 use std::{error::Error, fmt, mem::size_of};
 
+//MIDAS File constants
+const ODB_ID_LENGTH: usize = 2;
+const ODB_MI_LENGTH: usize = 2;
+const ODB_RUN_NUMBER_LENGTH: usize = 4;
+const ODB_TIME_STAMP_LENGTH: usize = 4;
+const ODB_SIZE_LENGTH: usize = 4;
+const ODB_HEADER_LENGTH: usize =
+    ODB_ID_LENGTH + ODB_MI_LENGTH + ODB_RUN_NUMBER_LENGTH + ODB_TIME_STAMP_LENGTH + ODB_SIZE_LENGTH;
+const BOR_ID: u16 = 32768;
+const ODB_MI: u16 = 18765;
+const EOR_ID: u16 = 32769;
+
 // MIDAS Event constants
 // Length in bytes of each field
 const EVENT_ID_LENGTH: usize = 2;
@@ -14,6 +26,13 @@ const EVENT_TIME_STAMP_LENGTH: usize = 4;
 const EVENT_SIZE_LENGTH: usize = 4;
 const EVENT_ALL_BANKS_SIZE_LENGTH: usize = 4;
 const EVENT_FLAGS_LENGTH: usize = 4;
+const EVENT_HEADER_LENGTH: usize = EVENT_ID_LENGTH
+    + EVENT_TRIGGER_MASK_LENGTH
+    + EVENT_SERIAL_NUMBER_LENGTH
+    + EVENT_TIME_STAMP_LENGTH
+    + EVENT_SIZE_LENGTH
+    + EVENT_ALL_BANKS_SIZE_LENGTH
+    + EVENT_FLAGS_LENGTH;
 
 // Data Bank constants
 // 16-bit Banks

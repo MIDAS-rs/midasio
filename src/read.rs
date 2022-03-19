@@ -10,6 +10,7 @@
 
 pub mod data_banks;
 pub mod events;
+pub mod file;
 
 #[cfg(test)]
 mod tests;

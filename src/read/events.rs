@@ -527,12 +527,6 @@ impl Error for TryEventViewFromSliceError {}
 /// ```
 pub struct EventView<'a> {
     slice: &'a [u8],
-    // MIDAS documentation is very poor. Somewhere it says that the "flags" field of the event is
-    // used for endianness detection. The first "flags" field is far into the file (after the ODB
-    // dump) so you should know endianness before hand to get there.
-    // At some other point it says that endianness of the file is fixed to that of the system that
-    // wrote the file. In other words, guess the endianness. If LittleEndian doesn't work, then it
-    // must be BigEndian; it is EXTREMELY unlikely both will yield valid sizes, ASCII, etc.
     endianness: Endianness,
 }
 
