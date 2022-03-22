@@ -95,10 +95,7 @@ impl<'a> Bank16View<'a> {
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
-        match error_in_bank_view(&bank) {
-            Some(error) => Err(error),
-            None => Ok(bank),
-        }
+        error_in_bank_view(&bank).map(|_| bank)
     }
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
@@ -120,10 +117,7 @@ impl<'a> Bank16View<'a> {
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
-        match error_in_bank_view(&bank) {
-            Some(error) => Err(error),
-            None => Ok(bank),
-        }
+        error_in_bank_view(&bank).map(|_| bank)
     }
     /// Return the name of the data bank. This is guaranteed to be 4 ASCII alphanumeric characters.
     ///
@@ -322,10 +316,7 @@ impl<'a> Bank32View<'a> {
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
-        match error_in_bank_view(&bank) {
-            Some(error) => Err(error),
-            None => Ok(bank),
-        }
+        error_in_bank_view(&bank).map(|_| bank)
     }
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
@@ -347,10 +338,7 @@ impl<'a> Bank32View<'a> {
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
-        match error_in_bank_view(&bank) {
-            Some(error) => Err(error),
-            None => Ok(bank),
-        }
+        error_in_bank_view(&bank).map(|_| bank)
     }
     /// Return the name of the data bank. This is guaranteed to be 4 ASCII alphanumeric characters.
     ///
@@ -550,10 +538,7 @@ impl<'a> Bank32AView<'a> {
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
-        match error_in_bank_view(&bank) {
-            Some(error) => Err(error),
-            None => Ok(bank),
-        }
+        error_in_bank_view(&bank).map(|_| bank)
     }
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
@@ -575,10 +560,7 @@ impl<'a> Bank32AView<'a> {
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
-        match error_in_bank_view(&bank) {
-            Some(error) => Err(error),
-            None => Ok(bank),
-        }
+        error_in_bank_view(&bank).map(|_| bank)
     }
     /// Return the name of the data bank. This is guaranteed to be 4 ASCII alphanumeric characters.
     ///
@@ -1058,9 +1040,9 @@ fn are_all_ascii_alphanumeric(slice: &[u8]) -> bool {
     true
 }
 
-fn error_in_bank_view<T: BankSlice>(bank: &T) -> Option<TryBankViewFromSliceError> {
+fn error_in_bank_view<T: BankSlice>(bank: &T) -> Result<(), TryBankViewFromSliceError> {
     if bank.data_bank_slice().len() < T::HEADER_LENGTH {
-        return Some(TryBankViewFromSliceError::SizeMismatch);
+        return Err(TryBankViewFromSliceError::SizeMismatch);
     }
 
     match (T::SIZE_LENGTH, T::TYPE_LENGTH) {
@@ -1074,7 +1056,7 @@ fn error_in_bank_view<T: BankSlice>(bank: &T) -> Option<TryBankViewFromSliceErro
                 }
             };
             if bank.data_slice().len() != size.try_into().unwrap() {
-                return Some(TryBankViewFromSliceError::SizeMismatch);
+                return Err(TryBankViewFromSliceError::SizeMismatch);
             }
             let data_type = match bank.endianness() {
                 Endianness::LittleEndian => {
@@ -1086,11 +1068,11 @@ fn error_in_bank_view<T: BankSlice>(bank: &T) -> Option<TryBankViewFromSliceErro
             };
             let data_type = match DataType::try_from(data_type) {
                 Ok(data_type) => data_type,
-                Err(error) => return Some(error.into()),
+                Err(error) => return Err(error.into()),
             };
             if let Some(type_size) = data_type.size() {
                 if size % u32::try_from(type_size).unwrap() != 0 {
-                    return Some(TryBankViewFromSliceError::IncompleteData);
+                    return Err(TryBankViewFromSliceError::IncompleteData);
                 }
             }
         }
@@ -1104,7 +1086,7 @@ fn error_in_bank_view<T: BankSlice>(bank: &T) -> Option<TryBankViewFromSliceErro
                 }
             };
             if bank.data_slice().len() != size.into() {
-                return Some(TryBankViewFromSliceError::SizeMismatch);
+                return Err(TryBankViewFromSliceError::SizeMismatch);
             }
             let data_type = match bank.endianness() {
                 Endianness::LittleEndian => {
@@ -1116,11 +1098,11 @@ fn error_in_bank_view<T: BankSlice>(bank: &T) -> Option<TryBankViewFromSliceErro
             };
             let data_type = match DataType::try_from(data_type) {
                 Ok(data_type) => data_type,
-                Err(error) => return Some(error.into()),
+                Err(error) => return Err(error.into()),
             };
             if let Some(type_size) = data_type.size() {
                 if size % u16::try_from(type_size).unwrap() != 0 {
-                    return Some(TryBankViewFromSliceError::IncompleteData);
+                    return Err(TryBankViewFromSliceError::IncompleteData);
                 }
             }
         }
@@ -1128,10 +1110,10 @@ fn error_in_bank_view<T: BankSlice>(bank: &T) -> Option<TryBankViewFromSliceErro
     }
 
     if !are_all_ascii_alphanumeric(bank.name_slice()) {
-        return Some(TryBankViewFromSliceError::NonAsciiName);
+        return Err(TryBankViewFromSliceError::NonAsciiName);
     }
 
-    None
+    Ok(())
 }
 
 #[cfg(test)]
