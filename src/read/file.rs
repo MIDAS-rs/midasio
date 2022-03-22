@@ -426,7 +426,7 @@ impl<'a> TryFrom<&'a [u8]> for FileView<'a> {
             Endianness::LittleEndian => u16::from_le_bytes(odb_id),
             Endianness::BigEndian => u16::from_be_bytes(odb_id),
         };
-        if dbg!(odb_id) != EOR_ID {
+        if odb_id != EOR_ID {
             return Err(TryFileViewFromSliceError::BadEorId);
         }
 

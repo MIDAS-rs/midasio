@@ -95,7 +95,8 @@ impl<'a> Bank16View<'a> {
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
-        error_in_bank_view(&bank).map(|_| bank)
+        error_in_bank_view(&bank)?;
+        Ok(bank)
     }
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
@@ -117,7 +118,8 @@ impl<'a> Bank16View<'a> {
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
-        error_in_bank_view(&bank).map(|_| bank)
+        error_in_bank_view(&bank)?;
+        Ok(bank)
     }
     /// Return the name of the data bank. This is guaranteed to be 4 ASCII alphanumeric characters.
     ///
@@ -316,7 +318,8 @@ impl<'a> Bank32View<'a> {
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
-        error_in_bank_view(&bank).map(|_| bank)
+        error_in_bank_view(&bank)?;
+        Ok(bank)
     }
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
@@ -338,7 +341,8 @@ impl<'a> Bank32View<'a> {
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
-        error_in_bank_view(&bank).map(|_| bank)
+        error_in_bank_view(&bank)?;
+        Ok(bank)
     }
     /// Return the name of the data bank. This is guaranteed to be 4 ASCII alphanumeric characters.
     ///
@@ -538,7 +542,8 @@ impl<'a> Bank32AView<'a> {
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
-        error_in_bank_view(&bank).map(|_| bank)
+        error_in_bank_view(&bank)?;
+        Ok(bank)
     }
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
@@ -560,7 +565,8 @@ impl<'a> Bank32AView<'a> {
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
-        error_in_bank_view(&bank).map(|_| bank)
+        error_in_bank_view(&bank)?;
+        Ok(bank)
     }
     /// Return the name of the data bank. This is guaranteed to be 4 ASCII alphanumeric characters.
     ///
