@@ -127,7 +127,7 @@ fn data_types_bank16_views() {
     let bank = Bank16View::try_from_be_bytes(&buffer).unwrap();
     assert!(matches!(bank.data_type(), DataType::F64));
 
-    let buffer = [48u8, 49, 110, 107, 0, 8, 0, 5, 1, 2, 3, 4, 5];
+    let buffer = [48u8, 49, 110, 107, 0, 8, 0, 4, 1, 2, 3, 4];
     let bank = Bank16View::try_from_be_bytes(&buffer).unwrap();
     assert!(matches!(bank.data_type(), DataType::Bool));
 }
@@ -320,7 +320,7 @@ fn data_types_bank32_views() {
     let bank = Bank32View::try_from_be_bytes(&buffer).unwrap();
     assert!(matches!(bank.data_type(), DataType::F64));
 
-    let buffer = [48u8, 49, 110, 107, 0, 0, 0, 8, 0, 0, 0, 5, 1, 2, 3, 4, 5];
+    let buffer = [48u8, 49, 110, 107, 0, 0, 0, 8, 0, 0, 0, 4, 1, 2, 3, 4];
     let bank = Bank32View::try_from_be_bytes(&buffer).unwrap();
     assert!(matches!(bank.data_type(), DataType::Bool));
 }
@@ -530,7 +530,7 @@ fn data_types_bank32a_views() {
     assert!(matches!(bank.data_type(), DataType::F64));
 
     let buffer = [
-        48u8, 49, 110, 107, 0, 0, 0, 8, 0, 0, 0, 5, 0, 0, 0, 0, 1, 2, 3, 4, 5,
+        48u8, 49, 110, 107, 0, 0, 0, 8, 0, 0, 0, 4, 0, 0, 0, 0, 1, 2, 3, 4,
     ];
     let bank = Bank32AView::try_from_be_bytes(&buffer).unwrap();
     assert!(matches!(bank.data_type(), DataType::Bool));

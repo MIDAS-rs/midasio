@@ -9,10 +9,14 @@ fn type_size() {
     assert_eq!(DataType::I16.size().unwrap(), 2);
     assert_eq!(DataType::U32.size().unwrap(), 4);
     assert_eq!(DataType::I32.size().unwrap(), 4);
-    assert_eq!(DataType::Bool.size().unwrap(), 1);
+    assert_eq!(DataType::Bool.size().unwrap(), 4);
     assert_eq!(DataType::F32.size().unwrap(), 4);
     assert_eq!(DataType::F64.size().unwrap(), 8);
+    assert_eq!(DataType::Bit32.size().unwrap(), 4);
+    assert!(DataType::Str.size().is_none());
     assert!(DataType::Struct.size().is_none());
+    assert_eq!(DataType::I64.size().unwrap(), 8);
+    assert_eq!(DataType::U64.size().unwrap(), 8);
 }
 
 #[test]
@@ -27,10 +31,14 @@ fn type_try_from_u8() {
     assert!(matches!(DataType::try_from(8u8).unwrap(), DataType::Bool));
     assert!(matches!(DataType::try_from(9u8).unwrap(), DataType::F32));
     assert!(matches!(DataType::try_from(10u8).unwrap(), DataType::F64));
+    assert!(matches!(DataType::try_from(11u8).unwrap(), DataType::Bit32));
+    assert!(matches!(DataType::try_from(12u8).unwrap(), DataType::Str));
     assert!(matches!(
         DataType::try_from(14u8).unwrap(),
         DataType::Struct
     ));
+    assert!(matches!(DataType::try_from(17u8).unwrap(), DataType::I64));
+    assert!(matches!(DataType::try_from(18u8).unwrap(), DataType::U64));
     assert!(matches!(
         DataType::try_from(100u8).unwrap_err(),
         TryDataTypeFromUnsignedError
@@ -50,9 +58,16 @@ fn type_try_from_u16() {
     assert!(matches!(DataType::try_from(9u16).unwrap(), DataType::F32));
     assert!(matches!(DataType::try_from(10u16).unwrap(), DataType::F64));
     assert!(matches!(
+        DataType::try_from(11u16).unwrap(),
+        DataType::Bit32
+    ));
+    assert!(matches!(DataType::try_from(12u16).unwrap(), DataType::Str));
+    assert!(matches!(
         DataType::try_from(14u16).unwrap(),
         DataType::Struct
     ));
+    assert!(matches!(DataType::try_from(17u16).unwrap(), DataType::I64));
+    assert!(matches!(DataType::try_from(18u16).unwrap(), DataType::U64));
     assert!(matches!(
         DataType::try_from(100u16).unwrap_err(),
         TryDataTypeFromUnsignedError
@@ -72,9 +87,16 @@ fn type_try_from_u32() {
     assert!(matches!(DataType::try_from(9u32).unwrap(), DataType::F32));
     assert!(matches!(DataType::try_from(10u32).unwrap(), DataType::F64));
     assert!(matches!(
+        DataType::try_from(11u32).unwrap(),
+        DataType::Bit32
+    ));
+    assert!(matches!(DataType::try_from(12u32).unwrap(), DataType::Str));
+    assert!(matches!(
         DataType::try_from(14u32).unwrap(),
         DataType::Struct
     ));
+    assert!(matches!(DataType::try_from(17u32).unwrap(), DataType::I64));
+    assert!(matches!(DataType::try_from(18u32).unwrap(), DataType::U64));
     assert!(matches!(
         DataType::try_from(100u32).unwrap_err(),
         TryDataTypeFromUnsignedError
@@ -94,9 +116,16 @@ fn type_try_from_u64() {
     assert!(matches!(DataType::try_from(9u64).unwrap(), DataType::F32));
     assert!(matches!(DataType::try_from(10u64).unwrap(), DataType::F64));
     assert!(matches!(
+        DataType::try_from(11u64).unwrap(),
+        DataType::Bit32
+    ));
+    assert!(matches!(DataType::try_from(12u64).unwrap(), DataType::Str));
+    assert!(matches!(
         DataType::try_from(14u64).unwrap(),
         DataType::Struct
     ));
+    assert!(matches!(DataType::try_from(17u64).unwrap(), DataType::I64));
+    assert!(matches!(DataType::try_from(18u64).unwrap(), DataType::U64));
     assert!(matches!(
         DataType::try_from(100u64).unwrap_err(),
         TryDataTypeFromUnsignedError
@@ -116,9 +145,16 @@ fn type_try_from_u128() {
     assert!(matches!(DataType::try_from(9u128).unwrap(), DataType::F32));
     assert!(matches!(DataType::try_from(10u128).unwrap(), DataType::F64));
     assert!(matches!(
+        DataType::try_from(11u128).unwrap(),
+        DataType::Bit32
+    ));
+    assert!(matches!(DataType::try_from(12u128).unwrap(), DataType::Str));
+    assert!(matches!(
         DataType::try_from(14u128).unwrap(),
         DataType::Struct
     ));
+    assert!(matches!(DataType::try_from(17u128).unwrap(), DataType::I64));
+    assert!(matches!(DataType::try_from(18u128).unwrap(), DataType::U64));
     assert!(matches!(
         DataType::try_from(100u128).unwrap_err(),
         TryDataTypeFromUnsignedError
