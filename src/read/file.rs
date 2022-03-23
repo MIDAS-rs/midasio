@@ -36,6 +36,7 @@ use std::{error::Error, fmt};
 /// let event_views = EventViews::from_le_bytes(&event);
 /// assert_eq!(1, event_views.count());
 /// ```
+#[derive(Clone, Debug)]
 pub struct EventViews<'a> {
     curr: usize,
     slice: &'a [u8],
@@ -231,13 +232,18 @@ impl Error for TryFileViewFromSliceError {}
 /// # Examples
 ///
 /// ```no_run
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<dyn Error>> {
 /// use std::fs;
 /// use midasio::read::file::FileView;
 ///
-/// let contents = fs::read("example.mid").unwrap();
+/// let contents = fs::read("example.mid")?;
 ///
-/// let file_view = FileView::try_from(&contents[..]).unwrap();
+/// let file_view = FileView::try_from(&contents[..])?;
+/// # Ok(())
+/// # }
 /// ```
+#[derive(Clone, Copy, Debug)]
 pub struct FileView<'a> {
     slice: &'a [u8],
     // Endianness is detected from the BOR id i.e. the first 2 bytes.
@@ -249,13 +255,17 @@ impl<'a> FileView<'a> {
     /// # Examples
     ///
     /// ```no_run
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use std::fs;
     /// use midasio::read::file::FileView;
     ///
-    /// let contents = fs::read("example.mid").unwrap();
-    /// let file_view = FileView::try_from(&contents[..]).unwrap();
+    /// let contents = fs::read("example.mid")?;
+    /// let file_view = FileView::try_from(&contents[..])?;
     ///
     /// let run_number: u32 = file_view.run_number();
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn run_number(&self) -> u32 {
         let offset = ODB_ID_LENGTH + ODB_MI_LENGTH;
@@ -272,13 +282,17 @@ impl<'a> FileView<'a> {
     /// # Examples
     ///
     /// ```no_run
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use std::fs;
     /// use midasio::read::file::FileView;
     ///
-    /// let contents = fs::read("example.mid").unwrap();
-    /// let file_view = FileView::try_from(&contents[..]).unwrap();
+    /// let contents = fs::read("example.mid")?;
+    /// let file_view = FileView::try_from(&contents[..])?;
     ///
     /// let timestamp: u32 = file_view.initial_timestamp();
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn initial_timestamp(&self) -> u32 {
         let offset = ODB_ID_LENGTH + ODB_MI_LENGTH + ODB_RUN_NUMBER_LENGTH;
@@ -296,13 +310,17 @@ impl<'a> FileView<'a> {
     /// # Examples
     ///
     /// ```no_run
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use std::fs;
     /// use midasio::read::file::FileView;
     ///
-    /// let contents = fs::read("example.mid").unwrap();
-    /// let file_view = FileView::try_from(&contents[..]).unwrap();
+    /// let contents = fs::read("example.mid")?;
+    /// let file_view = FileView::try_from(&contents[..])?;
     ///
     /// let odb_dump = file_view.initial_odb();
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn initial_odb(&self) -> &[u8] {
         let offset = ODB_ID_LENGTH + ODB_MI_LENGTH + ODB_RUN_NUMBER_LENGTH + ODB_TIME_STAMP_LENGTH;
@@ -318,13 +336,17 @@ impl<'a> FileView<'a> {
     /// # Examples
     ///
     /// ```no_run
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use std::fs;
     /// use midasio::read::file::FileView;
     ///
-    /// let contents = fs::read("example.mid").unwrap();
-    /// let file_view = FileView::try_from(&contents[..]).unwrap();
+    /// let contents = fs::read("example.mid")?;
+    /// let file_view = FileView::try_from(&contents[..])?;
     ///
     /// let timestamp: u32 = file_view.final_timestamp();
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn final_timestamp(&self) -> u32 {
         let mut events = self.into_iter();
@@ -346,13 +368,17 @@ impl<'a> FileView<'a> {
     /// # Examples
     ///
     /// ```no_run
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use std::fs;
     /// use midasio::read::file::FileView;
     ///
-    /// let contents = fs::read("example.mid").unwrap();
-    /// let file_view = FileView::try_from(&contents[..]).unwrap();
+    /// let contents = fs::read("example.mid")?;
+    /// let file_view = FileView::try_from(&contents[..])?;
     ///
     /// let odb_dump = file_view.final_odb();
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn final_odb(&self) -> &[u8] {
         let mut events = self.into_iter();
