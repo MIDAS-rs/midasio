@@ -78,7 +78,7 @@ pub enum DataType {
     U32,
     /// Signed 32-bits integer.
     I32,
-    /// Single byte boolean.
+    /// Four bytes boolean.
     Bool,
     /// 32-bits floating-point number.
     F32,

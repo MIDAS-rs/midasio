@@ -1,4 +1,4 @@
-use crate::{DataType, Endianness, TryDataTypeFromUnsignedError};
+use crate::{DataType, Endianness, TryDataTypeFromUnsignedError, BANK_PADDING};
 use std::{error::Error, fmt, slice::ChunksExact};
 
 /// The error type returned when conversion from
@@ -31,7 +31,7 @@ impl fmt::Display for TryBankViewFromSliceError {
 impl Error for TryBankViewFromSliceError {}
 impl From<TryDataTypeFromUnsignedError> for TryBankViewFromSliceError {
     fn from(_: TryDataTypeFromUnsignedError) -> Self {
-        TryBankViewFromSliceError::UnknownDataType
+        Self::UnknownDataType
     }
 }
 
@@ -47,16 +47,21 @@ impl From<TryDataTypeFromUnsignedError> for TryBankViewFromSliceError {
 /// # Examples
 ///
 /// ```
+/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # fn main() -> Result<(), TryBankViewFromSliceError> {
 /// use midasio::{DataType, read::data_banks::Bank16View};
 ///
-/// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-/// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
+/// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
+/// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
 ///
 /// assert_eq!("BANK", data_bank.name());
 /// assert!(matches!(data_bank.data_type(), DataType::Byte));
 /// assert_eq!([100, 200, 255], data_bank.data_slice());
 /// assert_eq!(5, data_bank.padding());
+/// # Ok(())
+/// # }
 /// ```
+#[derive(Clone, Copy, Debug)]
 pub struct Bank16View<'a> {
     slice: &'a [u8],
     endianness: Endianness,
@@ -78,20 +83,22 @@ impl<'a> Bank16View<'a> {
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// little endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`Bank16View`] with a description as to why the
+    /// provided bytes are not a little endian [`Bank16View`].
+    ///
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank16View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank16View;
     ///
-    /// // Valid data bank
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    ///
-    /// // Invalid data bank. Size field doesn't match length of data slice.
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer);
-    ///
-    /// assert!(matches!(data_bank, Err(error)));
+    /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
+    /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
@@ -101,20 +108,22 @@ impl<'a> Bank16View<'a> {
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`Bank16View`] with a description as to why the
+    /// provided bytes are not a big endian [`Bank16View`].
+    ///
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank16View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank16View;
     ///
-    /// // Valid data bank
-    /// let buffer = [66u8, 65, 78, 75, 0, 1, 0, 3, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_be_bytes(&buffer).unwrap();
-    ///
-    /// // Invalid data bank. Size field doesn't match length of data slice.
-    /// let buffer = [66u8, 65, 78, 75, 0, 1, 0, 1, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_be_bytes(&buffer);
-    ///
-    /// assert!(matches!(data_bank, Err(error)));
+    /// let buffer = [66, 65, 78, 75, 0, 1, 0, 3, 100, 200, 255];
+    /// let data_bank = Bank16View::try_from_be_bytes(&buffer)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
@@ -126,19 +135,16 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank16View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank16View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
+    /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
+    ///
     /// assert_eq!("BANK", data_bank.name());
-    ///
-    /// let buffer = [110u8, 97, 109, 101, 1, 0, 3, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!("name", data_bank.name());
-    ///
-    /// let buffer = [49u8, 50, 51, 52, 1, 0, 3, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!("1234", data_bank.name());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn name(&self) -> &str {
         std::str::from_utf8(self.name_slice()).unwrap()
@@ -150,19 +156,16 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
     /// use midasio::{DataType, read::data_banks::Bank16View};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert!(matches!(data_bank.data_type(), DataType::Byte));
+    /// let buffer = [66, 65, 78, 75, 6, 0, 4, 0, 100, 155, 200, 255];
+    /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 2, 0, 100, 200];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert!(matches!(data_bank.data_type(), DataType::U16));
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 4, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
     /// assert!(matches!(data_bank.data_type(), DataType::U32));
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_type(&self) -> DataType {
         let data_type = self.data_type_slice().try_into().unwrap();
@@ -178,19 +181,16 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank16View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank16View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
+    /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
+    ///
     /// assert_eq!([100, 200, 255], data_bank.data_slice());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 2, 0, 100, 200];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!([100, 200], data_bank.data_slice());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 4, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!([100, 155, 200, 255], data_bank.data_slice());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_slice(&self) -> &[u8] {
         BankSlice::data_slice(self)
@@ -205,26 +205,23 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank16View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank16View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!(5, data_bank.padding());
+    /// let buffer = [66, 65, 78, 75, 6, 0, 4, 0, 100, 155, 200, 255];
+    /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 2, 0, 100, 200];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!(6, data_bank.padding());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 4, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
     /// assert_eq!(4, data_bank.padding());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % crate::BANK_PADDING;
-        if remainder != 0 {
-            crate::BANK_PADDING - remainder
-        } else {
+        let remainder = self.data_slice().len() % BANK_PADDING;
+        if remainder == 0 {
             0
+        } else {
+            BANK_PADDING - remainder
         }
     }
 }
@@ -240,16 +237,21 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank16View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank16View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 4, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 4, 0, 4, 0, 100, 155, 100, 155];
+    /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
     /// let iter = data_bank.into_iter();
+    ///
     /// assert_eq!(2, iter.count());
     ///
     /// for u16_slice in &data_bank {
-    ///     let number = u16::from_le_bytes(u16_slice.try_into().unwrap());
+    ///     assert_eq!([100, 155], u16_slice);
     /// }
+    /// # Ok(())
+    /// # }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
         //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
@@ -270,16 +272,21 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
 /// # Examples
 ///
 /// ```
+/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # fn main() -> Result<(), TryBankViewFromSliceError> {
 /// use midasio::{DataType, read::data_banks::Bank32View};
 ///
-/// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-/// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
+/// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
+/// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
 ///
 /// assert_eq!("BANK", data_bank.name());
 /// assert!(matches!(data_bank.data_type(), DataType::Byte));
 /// assert_eq!([100, 200, 255], data_bank.data_slice());
 /// assert_eq!(5, data_bank.padding());
+/// # Ok(())
+/// # }
 /// ```
+#[derive(Clone, Copy, Debug)]
 pub struct Bank32View<'a> {
     slice: &'a [u8],
     endianness: Endianness,
@@ -301,20 +308,22 @@ impl<'a> Bank32View<'a> {
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// little endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`Bank32View`] with a description as to why the
+    /// provided bytes are not a little endian [`Bank32View`].
+    ///
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32View;
     ///
-    /// // Valid data bank
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    ///
-    /// // Invalid data bank. Size field doesn't match length of data slice.
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 1, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer);
-    ///
-    /// assert!(matches!(data_bank, Err(error)));
+    /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
+    /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
@@ -324,20 +333,22 @@ impl<'a> Bank32View<'a> {
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`Bank32View`] with a description as to why the
+    /// provided bytes are not a big endian [`Bank32View`].
+    ///
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32View;
     ///
-    /// // Valid data bank
-    /// let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 3, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_be_bytes(&buffer).unwrap();
-    ///
-    /// // Invalid data bank. Size field doesn't match length of data slice.
-    /// let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 1, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_be_bytes(&buffer);
-    ///
-    /// assert!(matches!(data_bank, Err(error)));
+    /// let buffer = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 3, 100, 200, 255];
+    /// let data_bank = Bank32View::try_from_be_bytes(&buffer)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
@@ -349,19 +360,16 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
+    /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
+    ///
     /// assert_eq!("BANK", data_bank.name());
-    ///
-    /// let buffer = [110u8, 97, 109, 101, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!("name", data_bank.name());
-    ///
-    /// let buffer = [49u8, 50, 51, 52, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!("1234", data_bank.name());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn name(&self) -> &str {
         std::str::from_utf8(self.name_slice()).unwrap()
@@ -373,19 +381,16 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
     /// use midasio::{DataType, read::data_banks::Bank32View};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert!(matches!(data_bank.data_type(), DataType::Byte));
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 100, 200];
+    /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 100, 200];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
     /// assert!(matches!(data_bank.data_type(), DataType::U16));
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert!(matches!(data_bank.data_type(), DataType::U32));
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_type(&self) -> DataType {
         let data_type = self.data_type_slice().try_into().unwrap();
@@ -401,19 +406,16 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!([100, 200, 255], data_bank.data_slice());
+    /// let buffer = [66, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
+    /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 100, 200];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!([100, 200], data_bank.data_slice());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
     /// assert_eq!([100, 155, 200, 255], data_bank.data_slice());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_slice(&self) -> &[u8] {
         BankSlice::data_slice(self)
@@ -428,26 +430,23 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
+    /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
+    ///
     /// assert_eq!(5, data_bank.padding());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 100, 200];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!(6, data_bank.padding());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!(4, data_bank.padding());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % crate::BANK_PADDING;
-        if remainder != 0 {
-            crate::BANK_PADDING - remainder
-        } else {
+        let remainder = self.data_slice().len() % BANK_PADDING;
+        if remainder == 0 {
             0
+        } else {
+            BANK_PADDING - remainder
         }
     }
 }
@@ -463,16 +462,20 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32View};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32View;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 100, 155];
+    /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
     /// let iter = data_bank.into_iter();
     /// assert_eq!(2, iter.count());
     ///
     /// for u16_slice in &data_bank {
-    ///     let number = u16::from_le_bytes(u16_slice.try_into().unwrap());
+    ///     assert_eq!([100, 155], u16_slice);
     /// }
+    /// # Ok(())
+    /// # }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
         //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
@@ -494,16 +497,21 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
 /// # Examples
 ///
 /// ```
+/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # fn main() -> Result<(), TryBankViewFromSliceError> {
 /// use midasio::{DataType, read::data_banks::Bank32AView};
 ///
-/// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-/// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
+/// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
+/// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
 ///
 /// assert_eq!("BANK", data_bank.name());
 /// assert!(matches!(data_bank.data_type(), DataType::Byte));
 /// assert_eq!([100, 200, 255], data_bank.data_slice());
 /// assert_eq!(5, data_bank.padding());
+/// # Ok(())
+/// # }
 /// ```
+#[derive(Clone, Copy, Debug)]
 pub struct Bank32AView<'a> {
     slice: &'a [u8],
     endianness: Endianness,
@@ -525,20 +533,22 @@ impl<'a> Bank32AView<'a> {
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// little endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`Bank32AView`] with a description as to why the
+    /// provided bytes are not a little endian [`Bank32AView`].
+    ///
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32AView;
     ///
-    /// // Valid data bank
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    ///
-    /// // Invalid data bank. Size field doesn't match length of data slice.
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 1, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer);
-    ///
-    /// assert!(matches!(data_bank, Err(error)));
+    /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
+    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_le_bytes_unchecked(buffer) };
@@ -548,20 +558,22 @@ impl<'a> Bank32AView<'a> {
     /// Create a native view to the underlying data bank from its representation as a byte slice in
     /// big endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`Bank32AView`] with a description as to why the
+    /// provided bytes are not a big endian [`Bank32AView`].
+    ///
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32AView;
     ///
-    /// // Valid data bank
-    /// let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_be_bytes(&buffer).unwrap();
-    ///
-    /// // Invalid data bank. Size field doesn't match length of data slice.
-    /// let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 1, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_be_bytes(&buffer);
-    ///
-    /// assert!(matches!(data_bank, Err(error)));
+    /// let buffer = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 100, 200, 255];
+    /// let data_bank = Bank32AView::try_from_be_bytes(&buffer)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryBankViewFromSliceError> {
         let bank = unsafe { Self::from_be_bytes_unchecked(buffer) };
@@ -573,19 +585,16 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32AView;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
+    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
+    ///
     /// assert_eq!("BANK", data_bank.name());
-    ///
-    /// let buffer = [110u8, 97, 109, 101, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!("name", data_bank.name());
-    ///
-    /// let buffer = [49u8, 50, 51, 52, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!("1234", data_bank.name());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn name(&self) -> &str {
         std::str::from_utf8(self.name_slice()).unwrap()
@@ -597,19 +606,16 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
     /// use midasio::{DataType, read::data_banks::Bank32AView};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert!(matches!(data_bank.data_type(), DataType::Byte));
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 100, 200];
+    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 100, 200];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
     /// assert!(matches!(data_bank.data_type(), DataType::U16));
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert!(matches!(data_bank.data_type(), DataType::U32));
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_type(&self) -> DataType {
         let data_type = self.data_type_slice().try_into().unwrap();
@@ -625,19 +631,16 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32AView;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!([100, 200, 255], data_bank.data_slice());
+    /// let buffer = [66, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
+    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 100, 200];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!([100, 200], data_bank.data_slice());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
     /// assert_eq!([100, 155, 200, 255], data_bank.data_slice());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_slice(&self) -> &[u8] {
         BankSlice::data_slice(self)
@@ -652,26 +655,23 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32AView;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
+    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
+    ///
     /// assert_eq!(5, data_bank.padding());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 100, 200];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!(6, data_bank.padding());
-    ///
-    /// let buffer = [66u8, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    /// assert_eq!(4, data_bank.padding());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % crate::BANK_PADDING;
-        if remainder != 0 {
-            crate::BANK_PADDING - remainder
-        } else {
+        let remainder = self.data_slice().len() % BANK_PADDING;
+        if remainder == 0 {
             0
+        } else {
+            BANK_PADDING - remainder
         }
     }
 }
@@ -687,16 +687,20 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::{DataType, read::data_banks::Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::Bank32AView;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 100, 155];
+    /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
     /// let iter = data_bank.into_iter();
     /// assert_eq!(2, iter.count());
     ///
     /// for u16_slice in &data_bank {
-    ///     let number = u16::from_le_bytes(u16_slice.try_into().unwrap());
+    ///     assert_eq!([100, 155], u16_slice);
     /// }
+    /// # Ok(())
+    /// # }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
         //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
@@ -713,16 +717,18 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
 /// # Examples
 ///
 /// ```
+/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # fn main() -> Result<(), TryBankViewFromSliceError> {
 /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
 ///
-/// let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100];
-/// let bank_16 = Bank16View::try_from_le_bytes(&buffer).unwrap();
+/// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
+/// let bank_16 = Bank16View::try_from_le_bytes(&buffer)?;
 ///
-/// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-/// let bank_32 = Bank32View::try_from_le_bytes(&buffer).unwrap();
+/// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
+/// let bank_32 = Bank32View::try_from_le_bytes(&buffer)?;
 ///
-/// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-/// let bank_32a = Bank32AView::try_from_le_bytes(&buffer).unwrap();
+/// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
+/// let bank_32a = Bank32AView::try_from_le_bytes(&buffer)?;
 ///
 /// let bank_16 = BankView::B16(bank_16);
 /// let bank_32 = BankView::B32(bank_32);
@@ -733,7 +739,10 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
 /// assert_eq!(bank_16.is_b16(), true);
 /// assert_eq!(bank_16.is_b32(), false);
 /// assert_eq!(bank_32a.is_b32a(), true);
+/// # Ok(())
+/// # }
 /// ```
+#[derive(Clone, Copy, Debug)]
 pub enum BankView<'a> {
     /// A 16-bit bank.
     B16(Bank16View<'a>),
@@ -749,12 +758,16 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::{BankView, Bank16View};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100];
-    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
+    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
     ///
     /// assert_eq!("BANK", bank_16.name());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn name(&self) -> &str {
         match self {
@@ -770,13 +783,17 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::{BankView, Bank16View};
     /// use midasio::DataType;
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100];
-    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
+    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
     ///
     /// assert!(matches!(bank_16.data_type(), DataType::Byte));
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_type(&self) -> DataType {
         match self {
@@ -791,13 +808,16 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
-    /// use midasio::DataType;
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::{BankView, Bank16View};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
+    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
     ///
     /// assert_eq!([100, 200, 255], bank_16.data_slice());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn data_slice(&self) -> &[u8] {
         match self {
@@ -816,19 +836,23 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::{BankView, Bank16View};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
-    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
+    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
     ///
     /// assert_eq!(5, bank_16.padding());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn padding(&self) -> usize {
-        let remainder = self.data_slice().len() % crate::BANK_PADDING;
-        if remainder != 0 {
-            crate::BANK_PADDING - remainder
-        } else {
+        let remainder = self.data_slice().len() % BANK_PADDING;
+        if remainder == 0 {
             0
+        } else {
+            BANK_PADDING - remainder
         }
     }
 
@@ -837,20 +861,24 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
     /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100];
-    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
+    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
+    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer)?);
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-    /// let bank_32a = BankView::B32A(Bank32AView::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
+    /// let bank_32a = BankView::B32A(Bank32AView::try_from_le_bytes(&buffer)?);
     ///
     /// assert_eq!(bank_16.is_b16(), true);
     /// assert_eq!(bank_32.is_b16(), false);
     /// assert_eq!(bank_32a.is_b16(), false);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn is_b16(&self) -> bool {
         matches!(self, BankView::B16(_))
@@ -861,20 +889,24 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
     /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100];
-    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
+    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
+    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer)?);
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-    /// let bank_32a = BankView::B32A(Bank32AView::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
+    /// let bank_32a = BankView::B32A(Bank32AView::try_from_le_bytes(&buffer)?);
     ///
     /// assert_eq!(bank_16.is_b32(), false);
     /// assert_eq!(bank_32.is_b32(), true);
     /// assert_eq!(bank_32a.is_b32(), false);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn is_b32(&self) -> bool {
         matches!(self, BankView::B32(_))
@@ -885,20 +917,24 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
     /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 1, 0, 100];
-    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
+    /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
+    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer)?);
     ///
-    /// let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
-    /// let bank_32a = BankView::B32A(Bank32AView::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
+    /// let bank_32a = BankView::B32A(Bank32AView::try_from_le_bytes(&buffer)?);
     ///
     /// assert_eq!(bank_16.is_b32a(), false);
     /// assert_eq!(bank_32.is_b32a(), false);
     /// assert_eq!(bank_32a.is_b32a(), true);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn is_b32a(&self) -> bool {
         matches!(self, BankView::B32A(_))
@@ -916,16 +952,20 @@ impl<'a> IntoIterator for &'a BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # fn main() -> Result<(), TryBankViewFromSliceError> {
+    /// use midasio::read::data_banks::{BankView, Bank32View};
     ///
-    /// let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
-    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer).unwrap());
+    /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 4, 0, 0, 0, 100, 100, 100, 100];
+    /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer)?);
     /// let iter = bank_32.into_iter();
     /// assert_eq!(4, iter.count());
     ///
     /// for u8_slice in &bank_32 {
-    ///     let number = u8::from_le_bytes(u8_slice.try_into().unwrap());
+    ///     assert_eq!([100], u8_slice);
     /// }
+    /// # Ok(())
+    /// # }
     /// ```
     fn into_iter(self) -> Self::IntoIter {
         //If the underlying object e.g. struct don't have a fixed size, iterate over bytes.
