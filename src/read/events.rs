@@ -17,14 +17,15 @@ use std::{error::Error, fmt};
 /// ```
 /// use midasio::read::events::Bank16Views;
 ///
-/// let bank_16 = [66u8, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
-/// let padding = [0u8, 0, 1, 1];
+/// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
+/// let padding = [0, 0, 1, 1];
 /// let banks: Vec<u8> = bank_16.into_iter().chain(padding.into_iter()).collect();
 /// let mut banks = Bank16Views::from_be_bytes(&banks);
 ///
 /// banks.next();
 /// assert_eq!([1, 1], banks.remainder());
 /// ```
+#[derive(Clone, Debug)]
 pub struct Bank16Views<'a> {
     curr: usize,
     slice: &'a [u8],
@@ -38,8 +39,8 @@ impl<'a> Bank16Views<'a> {
     /// ```
     /// use midasio::read::events::Bank16Views;
     ///
-    /// let bank_16 = [66u8, 65, 78, 75, 1, 0, 6, 0, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0];
+    /// let bank_16 = [66, 65, 78, 75, 1, 0, 6, 0, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0];
     /// let banks: Vec<u8> = bank_16.into_iter().chain(padding.into_iter()).collect();
     /// let banks = Bank16Views::from_le_bytes(&banks);
     ///
@@ -59,8 +60,8 @@ impl<'a> Bank16Views<'a> {
     /// ```
     /// use midasio::read::events::Bank16Views;
     ///
-    /// let bank_16 = [66u8, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0];
+    /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0];
     /// let banks: Vec<u8> = bank_16.into_iter().chain(padding.into_iter()).collect();
     /// let banks = Bank16Views::from_be_bytes(&banks);
     ///
@@ -81,8 +82,8 @@ impl<'a> Bank16Views<'a> {
     /// ```
     /// use midasio::read::events::Bank16Views;
     ///
-    /// let bank_16 = [66u8, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0, 1, 1];
+    /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0, 1, 1];
     /// let banks: Vec<u8> = bank_16.into_iter().chain(padding.into_iter()).collect();
     /// let mut banks = Bank16Views::from_be_bytes(&banks);
     ///
@@ -145,14 +146,15 @@ impl<'a> Iterator for Bank16Views<'a> {
 /// ```
 /// use midasio::read::events::Bank32Views;
 ///
-/// let bank_32 = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
-/// let padding = [0u8, 0, 1, 1];
+/// let bank_32 = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
+/// let padding = [0, 0, 1, 1];
 /// let banks: Vec<u8> = bank_32.into_iter().chain(padding.into_iter()).collect();
 /// let mut banks = Bank32Views::from_be_bytes(&banks);
 ///
 /// banks.next();
 /// assert_eq!([1, 1], banks.remainder());
 /// ```
+#[derive(Clone, Debug)]
 pub struct Bank32Views<'a> {
     curr: usize,
     slice: &'a [u8],
@@ -166,8 +168,8 @@ impl<'a> Bank32Views<'a> {
     /// ```
     /// use midasio::read::events::Bank32Views;
     ///
-    /// let bank_32 = [66u8, 65, 78, 75, 1, 0, 0, 0, 6, 0, 0, 0, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0];
+    /// let bank_32 = [66, 65, 78, 75, 1, 0, 0, 0, 6, 0, 0, 0, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0];
     /// let banks: Vec<u8> = bank_32.into_iter().chain(padding.into_iter()).collect();
     /// let banks = Bank32Views::from_le_bytes(&banks);
     ///
@@ -187,8 +189,8 @@ impl<'a> Bank32Views<'a> {
     /// ```
     /// use midasio::read::events::Bank32Views;
     ///
-    /// let bank_32 = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0];
+    /// let bank_32 = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0];
     /// let banks: Vec<u8> = bank_32.into_iter().chain(padding.into_iter()).collect();
     /// let banks = Bank32Views::from_be_bytes(&banks);
     ///
@@ -209,8 +211,8 @@ impl<'a> Bank32Views<'a> {
     /// ```
     /// use midasio::read::events::Bank32Views;
     ///
-    /// let bank_32 = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0, 1, 1];
+    /// let bank_32 = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0, 1, 1];
     /// let banks: Vec<u8> = bank_32.into_iter().chain(padding.into_iter()).collect();
     /// let mut banks = Bank32Views::from_be_bytes(&banks);
     ///
@@ -273,14 +275,15 @@ impl<'a> Iterator for Bank32Views<'a> {
 /// ```
 /// use midasio::read::events::Bank32AViews;
 ///
-/// let bank_32a = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
-/// let padding = [0u8, 0, 1, 1];
+/// let bank_32a = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
+/// let padding = [0, 0, 1, 1];
 /// let banks: Vec<u8> = bank_32a.into_iter().chain(padding.into_iter()).collect();
 /// let mut banks = Bank32AViews::from_be_bytes(&banks);
 ///
 /// banks.next();
 /// assert_eq!([1, 1], banks.remainder());
 /// ```
+#[derive(Clone, Debug)]
 pub struct Bank32AViews<'a> {
     curr: usize,
     slice: &'a [u8],
@@ -294,8 +297,8 @@ impl<'a> Bank32AViews<'a> {
     /// ```
     /// use midasio::read::events::Bank32AViews;
     ///
-    /// let bank_32a = [66u8, 65, 78, 75, 1, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0];
+    /// let bank_32a = [66, 65, 78, 75, 1, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0];
     /// let banks: Vec<u8> = bank_32a.into_iter().chain(padding.into_iter()).collect();
     /// let banks = Bank32AViews::from_le_bytes(&banks);
     ///
@@ -315,8 +318,8 @@ impl<'a> Bank32AViews<'a> {
     /// ```
     /// use midasio::read::events::Bank32AViews;
     ///
-    /// let bank_32a = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0];
+    /// let bank_32a = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0];
     /// let banks: Vec<u8> = bank_32a.into_iter().chain(padding.into_iter()).collect();
     /// let banks = Bank32AViews::from_be_bytes(&banks);
     ///
@@ -337,8 +340,8 @@ impl<'a> Bank32AViews<'a> {
     /// ```
     /// use midasio::read::events::Bank32AViews;
     ///
-    /// let bank_32a = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0, 1, 1];
+    /// let bank_32a = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0, 1, 1];
     /// let banks: Vec<u8> = bank_32a.into_iter().chain(padding.into_iter()).collect();
     /// let mut banks = Bank32AViews::from_be_bytes(&banks);
     ///
@@ -401,14 +404,15 @@ impl<'a> Iterator for Bank32AViews<'a> {
 /// ```
 /// use midasio::read::events::{BankViews, Bank16Views};
 ///
-/// let bank_16 = [66u8, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
-/// let padding = [0u8, 0, 1, 1];
+/// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
+/// let padding = [0, 0, 1, 1];
 /// let banks: Vec<u8> = bank_16.into_iter().chain(padding.into_iter()).collect();
 /// let mut banks = BankViews::B16(Bank16Views::from_be_bytes(&banks));
 ///
 /// banks.next();
 /// assert_eq!([1, 1], banks.remainder());
 /// ```
+#[derive(Clone, Debug)]
 pub enum BankViews<'a> {
     B16(Bank16Views<'a>),
     B32(Bank32Views<'a>),
@@ -423,8 +427,8 @@ impl<'a> BankViews<'a> {
     /// ```
     /// use midasio::read::events::{BankViews, Bank16Views};
     ///
-    /// let bank_16 = [66u8, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
-    /// let padding = [0u8, 0, 1, 1];
+    /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
+    /// let padding = [0, 0, 1, 1];
     /// let banks: Vec<u8> = bank_16.into_iter().chain(padding.into_iter()).collect();
     /// let mut banks = BankViews::B16(Bank16Views::from_be_bytes(&banks));
     ///
@@ -501,15 +505,17 @@ impl Error for TryEventViewFromSliceError {}
 /// # Examples
 ///
 /// ```
+/// # use midasio::read::events::TryEventViewFromSliceError;
+/// # fn main() -> Result<(), TryEventViewFromSliceError> {
 /// use midasio::read::events::EventView;
 ///
 /// let header = [
-///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 40, 0, 0, 0, 32, 0, 0, 0, 1,
+///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 40, 0, 0, 0, 32, 0, 0, 0, 1,
 /// ];
-/// let bank1 = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-/// let padding1 = [0u8, 0, 0, 0, 0, 0, 0];
-/// let bank2 = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-/// let padding2 = [0u8, 0, 0, 0, 0, 0, 0];
+/// let bank1 = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+/// let padding1 = [0, 0, 0, 0, 0, 0, 0];
+/// let bank2 = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+/// let padding2 = [0, 0, 0, 0, 0, 0, 0];
 ///
 /// let event: Vec<u8> = header
 ///     .into_iter()
@@ -518,13 +524,16 @@ impl Error for TryEventViewFromSliceError {}
 ///     .chain(bank2.into_iter())
 ///     .chain(padding2.into_iter())
 ///     .collect();
-/// let event = EventView::try_from_be_bytes(&event).unwrap();
+/// let event = EventView::try_from_be_bytes(&event)?;
 ///
 /// for bank in &event {
 ///     assert_eq!("BANK", bank.name());
 ///     assert_eq!([255], bank.data_slice());
 /// }
+/// # Ok(())
+/// # }
 /// ```
+#[derive(Clone, Copy, Debug)]
 pub struct EventView<'a> {
     slice: &'a [u8],
     endianness: Endianness,
@@ -546,80 +555,98 @@ impl<'a> EventView<'a> {
     /// Create a native view to a MIDAS event from its representation as a byte slice in little
     /// endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`EventView`] with a description as to why the
+    /// provided bytes are not a little endian [`EventView`].
+    ///
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     1u8, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
+    ///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 1, 0, 1, 0, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 1, 0, 1, 0, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_le_bytes(&event).unwrap();
+    /// let event = EventView::try_from_le_bytes(&event)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_le_bytes(buffer: &'a [u8]) -> Result<Self, TryEventViewFromSliceError> {
         let event = unsafe { Self::from_le_bytes_unchecked(buffer) };
-        match error_in_event_view(&event) {
-            Some(error) => Err(error),
-            None => Ok(event),
-        }
+        error_in_event_view(&event)?;
+        Ok(event)
     }
     /// Create a native view to a MIDAS event from its representation as a byte slice in little
     /// endian.
     ///
+    /// # Errors
+    ///
+    /// Returns [`Err`] if the slice is not a valid [`EventView`] with a description as to why the
+    /// provided bytes are not a big endian [`EventView`].
+    ///
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+    ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_be_bytes(&event).unwrap();
+    /// let event = EventView::try_from_be_bytes(&event)?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn try_from_be_bytes(buffer: &'a [u8]) -> Result<Self, TryEventViewFromSliceError> {
         let event = unsafe { Self::from_be_bytes_unchecked(buffer) };
-        match error_in_event_view(&event) {
-            Some(error) => Err(error),
-            None => Ok(event),
-        }
+        error_in_event_view(&event)?;
+        Ok(event)
     }
     /// Return the ID of a MIDAS event.
     ///
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+    ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_be_bytes(&event).unwrap();
+    /// let event = EventView::try_from_be_bytes(&event)?;
     ///
     /// assert_eq!(1, event.id());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn id(&self) -> u16 {
         let id = self.slice[..EVENT_ID_LENGTH].try_into().unwrap();
@@ -633,22 +660,26 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+    ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_be_bytes(&event).unwrap();
+    /// let event = EventView::try_from_be_bytes(&event)?;
     ///
     /// assert_eq!(2, event.trigger_mask());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn trigger_mask(&self) -> u16 {
         let offset = EVENT_ID_LENGTH;
@@ -665,22 +696,26 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+    ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_be_bytes(&event).unwrap();
+    /// let event = EventView::try_from_be_bytes(&event)?;
     ///
     /// assert_eq!(3, event.serial_number());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn serial_number(&self) -> u32 {
         let offset = EVENT_ID_LENGTH + EVENT_TRIGGER_MASK_LENGTH;
@@ -697,22 +732,26 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+    ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_be_bytes(&event).unwrap();
+    /// let event = EventView::try_from_be_bytes(&event)?;
     ///
     /// assert_eq!(4, event.time_stamp());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn time_stamp(&self) -> u32 {
         let offset = EVENT_ID_LENGTH + EVENT_TRIGGER_MASK_LENGTH + EVENT_SERIAL_NUMBER_LENGTH;
@@ -729,22 +768,26 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+    ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_be_bytes(&event).unwrap();
+    /// let event = EventView::try_from_be_bytes(&event)?;
     ///
     /// assert_eq!(1, event.flags());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn flags(&self) -> u32 {
         let offset = EVENT_ID_LENGTH
@@ -766,22 +809,26 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
+    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # fn main() -> Result<(), TryEventViewFromSliceError> {
     /// use midasio::read::events::EventView;
     ///
     /// let header = [
-    ///     0u8, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+    ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
     /// ];
-    /// let bank = [66u8, 65, 78, 75, 0, 1, 0, 1, 255];
-    /// let padding = [0u8, 0, 0, 0, 0, 0, 0];
+    /// let bank = [66, 65, 78, 75, 0, 1, 0, 1, 255];
+    /// let padding = [0, 0, 0, 0, 0, 0, 0];
     ///
     /// let event: Vec<u8> = header
     ///     .into_iter()
     ///     .chain(bank.into_iter())
     ///     .chain(padding.into_iter())
     ///     .collect();
-    /// let event = EventView::try_from_be_bytes(&event).unwrap();
+    /// let event = EventView::try_from_be_bytes(&event)?;
     ///
     /// assert_eq!([66, 65, 78, 75, 0, 1, 0, 1, 255, 0, 0, 0, 0, 0, 0, 0], event.all_banks_slice());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn all_banks_slice(&self) -> &[u8] {
         let offset = EVENT_ID_LENGTH
@@ -802,31 +849,25 @@ impl<'a> IntoIterator for &'a EventView<'a> {
     fn into_iter(self) -> Self::IntoIter {
         let flags = self.flags();
         let bank_type = BankType::try_from(flags).unwrap();
-        match bank_type {
-            BankType::B16 => match self.endianness {
-                Endianness::LittleEndian => {
-                    BankViews::B16(Bank16Views::from_le_bytes(self.all_banks_slice()))
-                }
-                Endianness::BigEndian => {
-                    BankViews::B16(Bank16Views::from_be_bytes(self.all_banks_slice()))
-                }
-            },
-            BankType::B32 => match self.endianness {
-                Endianness::LittleEndian => {
-                    BankViews::B32(Bank32Views::from_le_bytes(self.all_banks_slice()))
-                }
-                Endianness::BigEndian => {
-                    BankViews::B32(Bank32Views::from_be_bytes(self.all_banks_slice()))
-                }
-            },
-            BankType::B32A => match self.endianness {
-                Endianness::LittleEndian => {
-                    BankViews::B32A(Bank32AViews::from_le_bytes(self.all_banks_slice()))
-                }
-                Endianness::BigEndian => {
-                    BankViews::B32A(Bank32AViews::from_be_bytes(self.all_banks_slice()))
-                }
-            },
+        match (bank_type, self.endianness) {
+            (BankType::B16, Endianness::LittleEndian) => {
+                BankViews::B16(Bank16Views::from_le_bytes(self.all_banks_slice()))
+            }
+            (BankType::B16, Endianness::BigEndian) => {
+                BankViews::B16(Bank16Views::from_be_bytes(self.all_banks_slice()))
+            }
+            (BankType::B32, Endianness::LittleEndian) => {
+                BankViews::B32(Bank32Views::from_le_bytes(self.all_banks_slice()))
+            }
+            (BankType::B32, Endianness::BigEndian) => {
+                BankViews::B32(Bank32Views::from_be_bytes(self.all_banks_slice()))
+            }
+            (BankType::B32A, Endianness::LittleEndian) => {
+                BankViews::B32A(Bank32AViews::from_le_bytes(self.all_banks_slice()))
+            }
+            (BankType::B32A, Endianness::BigEndian) => {
+                BankViews::B32A(Bank32AViews::from_be_bytes(self.all_banks_slice()))
+            }
         }
     }
 }
@@ -838,7 +879,7 @@ impl<'a> IntoIterator for &'a EventView<'a> {
 // 4) The flags field is an unknown integer.
 // 5) The all_banks_slice is not exactly a number of data banks plus their padding. There shouldn't
 //    be any remainder.
-fn error_in_event_view(event: &EventView) -> Option<TryEventViewFromSliceError> {
+fn error_in_event_view(event: &EventView) -> Result<(), TryEventViewFromSliceError> {
     let header_length = EVENT_ID_LENGTH
         + EVENT_TRIGGER_MASK_LENGTH
         + EVENT_SERIAL_NUMBER_LENGTH
@@ -847,7 +888,7 @@ fn error_in_event_view(event: &EventView) -> Option<TryEventViewFromSliceError> 
         + EVENT_ALL_BANKS_SIZE_LENGTH
         + EVENT_FLAGS_LENGTH;
     if event.slice.len() < header_length {
-        return Some(TryEventViewFromSliceError::SizeMismatch);
+        return Err(TryEventViewFromSliceError::SizeMismatch);
     }
 
     let offset = EVENT_ID_LENGTH
@@ -874,11 +915,11 @@ fn error_in_event_view(event: &EventView) -> Option<TryEventViewFromSliceError> 
     if usize::try_from(event_size).unwrap() - EVENT_ALL_BANKS_SIZE_LENGTH - EVENT_FLAGS_LENGTH
         != all_banks_size.try_into().unwrap()
     {
-        return Some(TryEventViewFromSliceError::EventAndBanksMismatch);
+        return Err(TryEventViewFromSliceError::EventAndBanksMismatch);
     }
 
     if event.slice.len() - header_length != all_banks_size.try_into().unwrap() {
-        return Some(TryEventViewFromSliceError::SizeMismatch);
+        return Err(TryEventViewFromSliceError::SizeMismatch);
     }
 
     let offset = offset + EVENT_ALL_BANKS_SIZE_LENGTH;
@@ -891,7 +932,7 @@ fn error_in_event_view(event: &EventView) -> Option<TryEventViewFromSliceError> 
     };
     let bank_type = match BankType::try_from(flags) {
         Ok(bank_type) => bank_type,
-        Err(_) => return Some(TryEventViewFromSliceError::UnknownFlag),
+        Err(_) => return Err(TryEventViewFromSliceError::UnknownFlag),
     };
 
     let mut all_banks = match bank_type {
@@ -922,9 +963,9 @@ fn error_in_event_view(event: &EventView) -> Option<TryEventViewFromSliceError> 
     };
     for _ in all_banks.by_ref() {}
     if !all_banks.remainder().is_empty() {
-        return Some(TryEventViewFromSliceError::BadBank);
+        return Err(TryEventViewFromSliceError::BadBank);
     }
-    None
+    Ok(())
 }
 
 #[cfg(test)]
