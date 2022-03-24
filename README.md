@@ -21,8 +21,8 @@ There are multiple way to contribute:
   issue](https://github.com/DJDuque/midasio/issues/new).
 - Comment/propose a fix on some of the current [open 
 issues](https://github.com/DJDuque/midasio/issues).
-- Read through the documentation. If there is something confusing, or you have a
-  suggestion for something that could be improved, please let the maintainer(s)
-know.
+- Read through the [documentation](https://docs.rs/midasio). If there is 
+  something confusing, or you have a suggestion for something that could be 
+  improved, please let the maintainer(s) know.
 - Help evaluate [open pull requests](https://github.com/DJDuque/midasio/pulls),
   by testing locally and reviewing what is proposed.
