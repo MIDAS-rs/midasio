@@ -16,7 +16,7 @@ midasio = "0.1"
 
 ## Want to contribute?
 
-There are multiple way to contribute:
+There are multiple ways to contribute:
 - Install and test Midasio. If it doesn't work as expected please [open an
   issue](https://github.com/DJDuque/midasio/issues/new).
 - Comment/propose a fix on some of the current [open 
