@@ -13,6 +13,21 @@ Add the following to your `Cargo.toml` file:
 [dependencies]
 midasio = "0.1"
 ```
+Reading a MIDAS file is as simple as:
+```rust
+use std::fs;
+use midasio::read::file::FileView;
+
+let contents = fs::read("example.mid")?;
+let file_view = FileView::try_from(&contents[..])?;
+
+for event in &file_view {
+    // Do something with each event in the file.
+    for bank in &event {
+        // Do something with each data bank in the event.
+    }
+}
+```
 
 ## Want to contribute?
 
