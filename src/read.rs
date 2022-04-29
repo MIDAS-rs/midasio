@@ -29,8 +29,8 @@
 //! allows us to, for example, use a memory-mapped file. See the
 //! [`memmap2`](https://docs.rs/memmap2/latest/memmap2/) crate.
 
-pub mod data_banks;
-pub mod events;
+pub mod data_bank;
+pub mod event;
 pub mod file;
 
 #[cfg(test)]

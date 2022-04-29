@@ -47,9 +47,9 @@ impl From<TryDataTypeFromUnsignedError> for TryBankViewFromSliceError {
 /// # Examples
 ///
 /// ```
-/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # use midasio::read::data_bank::TryBankViewFromSliceError;
 /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-/// use midasio::{DataType, read::data_banks::Bank16View};
+/// use midasio::{DataType, read::data_bank::Bank16View};
 ///
 /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
 /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
@@ -91,9 +91,9 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank16View;
+    /// use midasio::read::data_bank::Bank16View;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
     /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
@@ -116,9 +116,9 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank16View;
+    /// use midasio::read::data_bank::Bank16View;
     ///
     /// let buffer = [66, 65, 78, 75, 0, 1, 0, 3, 100, 200, 255];
     /// let data_bank = Bank16View::try_from_be_bytes(&buffer)?;
@@ -135,9 +135,9 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank16View;
+    /// use midasio::read::data_bank::Bank16View;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
     /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
@@ -156,9 +156,9 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::{DataType, read::data_banks::Bank16View};
+    /// use midasio::{DataType, read::data_bank::Bank16View};
     ///
     /// let buffer = [66, 65, 78, 75, 6, 0, 4, 0, 100, 155, 200, 255];
     /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
@@ -181,9 +181,9 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank16View;
+    /// use midasio::read::data_bank::Bank16View;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
     /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
@@ -205,9 +205,9 @@ impl<'a> Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank16View;
+    /// use midasio::read::data_bank::Bank16View;
     ///
     /// let buffer = [66, 65, 78, 75, 6, 0, 4, 0, 100, 155, 200, 255];
     /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
@@ -237,9 +237,9 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank16View;
+    /// use midasio::read::data_bank::Bank16View;
     ///
     /// let buffer = [66, 65, 78, 75, 4, 0, 4, 0, 100, 155, 100, 155];
     /// let data_bank = Bank16View::try_from_le_bytes(&buffer)?;
@@ -272,9 +272,9 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
 /// # Examples
 ///
 /// ```
-/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # use midasio::read::data_bank::TryBankViewFromSliceError;
 /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-/// use midasio::{DataType, read::data_banks::Bank32View};
+/// use midasio::{DataType, read::data_bank::Bank32View};
 ///
 /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
 /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
@@ -316,9 +316,9 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32View;
+    /// use midasio::read::data_bank::Bank32View;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
     /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
@@ -341,9 +341,9 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32View;
+    /// use midasio::read::data_bank::Bank32View;
     ///
     /// let buffer = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 3, 100, 200, 255];
     /// let data_bank = Bank32View::try_from_be_bytes(&buffer)?;
@@ -360,9 +360,9 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32View;
+    /// use midasio::read::data_bank::Bank32View;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
     /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
@@ -381,9 +381,9 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::{DataType, read::data_banks::Bank32View};
+    /// use midasio::{DataType, read::data_bank::Bank32View};
     ///
     /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 100, 200];
     /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
@@ -406,9 +406,9 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32View;
+    /// use midasio::read::data_bank::Bank32View;
     ///
     /// let buffer = [66, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 100, 155, 200, 255];
     /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
@@ -430,9 +430,9 @@ impl<'a> Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32View;
+    /// use midasio::read::data_bank::Bank32View;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 100, 200, 255];
     /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
@@ -462,9 +462,9 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32View;
+    /// use midasio::read::data_bank::Bank32View;
     ///
     /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 100, 155, 100, 155];
     /// let data_bank = Bank32View::try_from_le_bytes(&buffer)?;
@@ -497,9 +497,9 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
 /// # Examples
 ///
 /// ```
-/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # use midasio::read::data_bank::TryBankViewFromSliceError;
 /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-/// use midasio::{DataType, read::data_banks::Bank32AView};
+/// use midasio::{DataType, read::data_bank::Bank32AView};
 ///
 /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
 /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
@@ -541,9 +541,9 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32AView;
+    /// use midasio::read::data_bank::Bank32AView;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
     /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
@@ -566,9 +566,9 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32AView;
+    /// use midasio::read::data_bank::Bank32AView;
     ///
     /// let buffer = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 0, 100, 200, 255];
     /// let data_bank = Bank32AView::try_from_be_bytes(&buffer)?;
@@ -585,9 +585,9 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32AView;
+    /// use midasio::read::data_bank::Bank32AView;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
     /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
@@ -606,9 +606,9 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::{DataType, read::data_banks::Bank32AView};
+    /// use midasio::{DataType, read::data_bank::Bank32AView};
     ///
     /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 100, 200];
     /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
@@ -631,9 +631,9 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32AView;
+    /// use midasio::read::data_bank::Bank32AView;
     ///
     /// let buffer = [66, 65, 78, 75, 6, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 200, 255];
     /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
@@ -655,9 +655,9 @@ impl<'a> Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32AView;
+    /// use midasio::read::data_bank::Bank32AView;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 100, 200, 255];
     /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
@@ -687,9 +687,9 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::Bank32AView;
+    /// use midasio::read::data_bank::Bank32AView;
     ///
     /// let buffer = [66, 65, 78, 75, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 100, 155, 100, 155];
     /// let data_bank = Bank32AView::try_from_le_bytes(&buffer)?;
@@ -717,9 +717,9 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
 /// # Examples
 ///
 /// ```
-/// # use midasio::read::data_banks::TryBankViewFromSliceError;
+/// # use midasio::read::data_bank::TryBankViewFromSliceError;
 /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-/// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+/// use midasio::read::data_bank::{BankView, Bank16View, Bank32View, Bank32AView};
 ///
 /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
 /// let bank_16 = Bank16View::try_from_le_bytes(&buffer)?;
@@ -758,9 +758,9 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank16View};
+    /// use midasio::read::data_bank::{BankView, Bank16View};
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
     /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
@@ -783,9 +783,9 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank16View};
+    /// use midasio::read::data_bank::{BankView, Bank16View};
     /// use midasio::DataType;
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
@@ -808,9 +808,9 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank16View};
+    /// use midasio::read::data_bank::{BankView, Bank16View};
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
     /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
@@ -836,9 +836,9 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank16View};
+    /// use midasio::read::data_bank::{BankView, Bank16View};
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 3, 0, 100, 200, 255];
     /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
@@ -861,9 +861,9 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+    /// use midasio::read::data_bank::{BankView, Bank16View, Bank32View, Bank32AView};
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
     /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
@@ -889,9 +889,9 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+    /// use midasio::read::data_bank::{BankView, Bank16View, Bank32View, Bank32AView};
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
     /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
@@ -917,9 +917,9 @@ impl<'a> BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank16View, Bank32View, Bank32AView};
+    /// use midasio::read::data_bank::{BankView, Bank16View, Bank32View, Bank32AView};
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 1, 0, 100];
     /// let bank_16 = BankView::B16(Bank16View::try_from_le_bytes(&buffer)?);
@@ -952,9 +952,9 @@ impl<'a> IntoIterator for &'a BankView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::data_banks::TryBankViewFromSliceError;
+    /// # use midasio::read::data_bank::TryBankViewFromSliceError;
     /// # fn main() -> Result<(), TryBankViewFromSliceError> {
-    /// use midasio::read::data_banks::{BankView, Bank32View};
+    /// use midasio::read::data_bank::{BankView, Bank32View};
     ///
     /// let buffer = [66, 65, 78, 75, 1, 0, 0, 0, 4, 0, 0, 0, 100, 100, 100, 100];
     /// let bank_32 = BankView::B32(Bank32View::try_from_le_bytes(&buffer)?);

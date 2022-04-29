@@ -1,4 +1,4 @@
-use crate::read::events::EventView;
+use crate::read::event::EventView;
 use crate::{Endianness, EVENT_HEADER_LENGTH};
 use crate::{
     BOR_ID, EOR_ID, ODB_HEADER_LENGTH, ODB_ID_LENGTH, ODB_MI, ODB_MI_LENGTH, ODB_RUN_NUMBER_LENGTH,

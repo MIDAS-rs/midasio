@@ -1,4 +1,4 @@
-use crate::read::data_banks::{Bank16View, Bank32AView, Bank32View, BankSlice, BankView};
+use crate::read::data_bank::{Bank16View, Bank32AView, Bank32View, BankSlice, BankView};
 use crate::{BankType, Endianness};
 use crate::{
     EVENT_ALL_BANKS_SIZE_LENGTH, EVENT_FLAGS_LENGTH, EVENT_ID_LENGTH, EVENT_SERIAL_NUMBER_LENGTH,
@@ -15,7 +15,7 @@ use std::{error::Error, fmt};
 /// # Examples
 ///
 /// ```
-/// use midasio::read::events::Bank16Views;
+/// use midasio::read::event::Bank16Views;
 ///
 /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
 /// let padding = [0, 0, 1, 1];
@@ -37,7 +37,7 @@ impl<'a> Bank16Views<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank16Views;
+    /// use midasio::read::event::Bank16Views;
     ///
     /// let bank_16 = [66, 65, 78, 75, 1, 0, 6, 0, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0];
@@ -58,7 +58,7 @@ impl<'a> Bank16Views<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank16Views;
+    /// use midasio::read::event::Bank16Views;
     ///
     /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0];
@@ -80,7 +80,7 @@ impl<'a> Bank16Views<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank16Views;
+    /// use midasio::read::event::Bank16Views;
     ///
     /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0, 1, 1];
@@ -144,7 +144,7 @@ impl<'a> Iterator for Bank16Views<'a> {
 /// # Examples
 ///
 /// ```
-/// use midasio::read::events::Bank32Views;
+/// use midasio::read::event::Bank32Views;
 ///
 /// let bank_32 = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
 /// let padding = [0, 0, 1, 1];
@@ -166,7 +166,7 @@ impl<'a> Bank32Views<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank32Views;
+    /// use midasio::read::event::Bank32Views;
     ///
     /// let bank_32 = [66, 65, 78, 75, 1, 0, 0, 0, 6, 0, 0, 0, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0];
@@ -187,7 +187,7 @@ impl<'a> Bank32Views<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank32Views;
+    /// use midasio::read::event::Bank32Views;
     ///
     /// let bank_32 = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0];
@@ -209,7 +209,7 @@ impl<'a> Bank32Views<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank32Views;
+    /// use midasio::read::event::Bank32Views;
     ///
     /// let bank_32 = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0, 1, 1];
@@ -273,7 +273,7 @@ impl<'a> Iterator for Bank32Views<'a> {
 /// # Examples
 ///
 /// ```
-/// use midasio::read::events::Bank32AViews;
+/// use midasio::read::event::Bank32AViews;
 ///
 /// let bank_32a = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
 /// let padding = [0, 0, 1, 1];
@@ -295,7 +295,7 @@ impl<'a> Bank32AViews<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank32AViews;
+    /// use midasio::read::event::Bank32AViews;
     ///
     /// let bank_32a = [66, 65, 78, 75, 1, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0];
@@ -316,7 +316,7 @@ impl<'a> Bank32AViews<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank32AViews;
+    /// use midasio::read::event::Bank32AViews;
     ///
     /// let bank_32a = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0];
@@ -338,7 +338,7 @@ impl<'a> Bank32AViews<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::Bank32AViews;
+    /// use midasio::read::event::Bank32AViews;
     ///
     /// let bank_32a = [66, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0, 1, 1];
@@ -402,7 +402,7 @@ impl<'a> Iterator for Bank32AViews<'a> {
 /// # Examples
 ///
 /// ```
-/// use midasio::read::events::{BankViews, Bank16Views};
+/// use midasio::read::event::{BankViews, Bank16Views};
 ///
 /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
 /// let padding = [0, 0, 1, 1];
@@ -425,7 +425,7 @@ impl<'a> BankViews<'a> {
     /// # Examples
     ///
     /// ```
-    /// use midasio::read::events::{BankViews, Bank16Views};
+    /// use midasio::read::event::{BankViews, Bank16Views};
     ///
     /// let bank_16 = [66, 65, 78, 75, 0, 1, 0, 6, 1, 2, 3, 4, 5, 6];
     /// let padding = [0, 0, 1, 1];
@@ -505,9 +505,9 @@ impl Error for TryEventViewFromSliceError {}
 /// # Examples
 ///
 /// ```
-/// # use midasio::read::events::TryEventViewFromSliceError;
+/// # use midasio::read::event::TryEventViewFromSliceError;
 /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-/// use midasio::read::events::EventView;
+/// use midasio::read::event::EventView;
 ///
 /// let header = [
 ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 40, 0, 0, 0, 32, 0, 0, 0, 1,
@@ -563,9 +563,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
@@ -598,9 +598,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
@@ -627,9 +627,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
@@ -660,9 +660,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
@@ -696,9 +696,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
@@ -732,9 +732,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
@@ -768,9 +768,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
@@ -809,9 +809,9 @@ impl<'a> EventView<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use midasio::read::events::TryEventViewFromSliceError;
+    /// # use midasio::read::event::TryEventViewFromSliceError;
     /// # fn main() -> Result<(), TryEventViewFromSliceError> {
-    /// use midasio::read::events::EventView;
+    /// use midasio::read::event::EventView;
     ///
     /// let header = [
     ///     0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
