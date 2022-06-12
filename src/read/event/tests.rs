@@ -560,7 +560,7 @@ fn valid_b16_le_event_view() {
     assert_eq!(1, event.id());
     assert_eq!(2, event.trigger_mask());
     assert_eq!(3, event.serial_number());
-    assert_eq!(4, event.time_stamp());
+    assert_eq!(4, event.timestamp());
     assert_eq!(1, event.flags());
 
     for bank in &event {
@@ -591,7 +591,7 @@ fn valid_b16_be_event_view() {
     assert_eq!(1, event.id());
     assert_eq!(2, event.trigger_mask());
     assert_eq!(3, event.serial_number());
-    assert_eq!(4, event.time_stamp());
+    assert_eq!(4, event.timestamp());
     assert_eq!(1, event.flags());
 
     for bank in &event {
@@ -612,7 +612,7 @@ fn valid_empty_b16_be_event_view() {
     assert_eq!(1, event.id());
     assert_eq!(2, event.trigger_mask());
     assert_eq!(3, event.serial_number());
-    assert_eq!(4, event.time_stamp());
+    assert_eq!(4, event.timestamp());
     assert_eq!(1, event.flags());
 }
 
@@ -750,7 +750,7 @@ fn valid_b32_le_event_view() {
     assert_eq!(1, event.id());
     assert_eq!(2, event.trigger_mask());
     assert_eq!(3, event.serial_number());
-    assert_eq!(4, event.time_stamp());
+    assert_eq!(4, event.timestamp());
     assert_eq!(17, event.flags());
 
     for bank in &event {
@@ -781,7 +781,7 @@ fn valid_b32a_le_event_view() {
     assert_eq!(1, event.id());
     assert_eq!(2, event.trigger_mask());
     assert_eq!(3, event.serial_number());
-    assert_eq!(4, event.time_stamp());
+    assert_eq!(4, event.timestamp());
     assert_eq!(49, event.flags());
 
     for bank in &event {
