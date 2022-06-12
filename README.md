@@ -13,7 +13,7 @@ data banks.
 Add the following to your `Cargo.toml` file:
 ```toml
 [dependencies]
-midasio = "0.2"
+midasio = "0.3"
 ```
 Reading a MIDAS file is as simple as:
 ```rust
