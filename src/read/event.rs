@@ -495,9 +495,9 @@ impl Error for TryEventViewFromSliceError {}
 /// - 2 bytes event id.
 /// - 2 bytes trigger mask.
 /// - 4 bytes serial number.
-/// - 4 bytes time stamp.
+/// - 4 bytes timestamp.
 /// - 4 bytes event size. It doesn't include the 12 bytes from the event id, trigger mask, serial
-/// number, and time stamp.
+/// number, and timestamp.
 /// - 4 bytes size of all banks. Redundant. Equal to event size minus 8 bytes.
 /// - 4 bytes flags. Determines the variant of the following [`BankView`]s.
 /// - Arbitrary number of [`BankView`]s.
@@ -727,7 +727,7 @@ impl<'a> EventView<'a> {
             Endianness::BigEndian => u32::from_be_bytes(serial_number),
         }
     }
-    /// Return the time stamp of a MIDAS event.
+    /// Return the timestamp of a MIDAS event.
     ///
     /// # Examples
     ///
@@ -749,18 +749,18 @@ impl<'a> EventView<'a> {
     ///     .collect();
     /// let event = EventView::try_from_be_bytes(&event)?;
     ///
-    /// assert_eq!(4, event.time_stamp());
+    /// assert_eq!(4, event.timestamp());
     /// # Ok(())
     /// # }
     /// ```
-    pub fn time_stamp(&self) -> u32 {
+    pub fn timestamp(&self) -> u32 {
         let offset = EVENT_ID_LENGTH + EVENT_TRIGGER_MASK_LENGTH + EVENT_SERIAL_NUMBER_LENGTH;
-        let time_stamp = self.slice[offset..][..EVENT_TIME_STAMP_LENGTH]
+        let timestamp = self.slice[offset..][..EVENT_TIME_STAMP_LENGTH]
             .try_into()
             .unwrap();
         match self.endianness {
-            Endianness::LittleEndian => u32::from_le_bytes(time_stamp),
-            Endianness::BigEndian => u32::from_be_bytes(time_stamp),
+            Endianness::LittleEndian => u32::from_le_bytes(timestamp),
+            Endianness::BigEndian => u32::from_be_bytes(timestamp),
         }
     }
     /// Return the unsigned integer representation of the flags of a MIDAS event.
