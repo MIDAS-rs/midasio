@@ -830,7 +830,7 @@ impl<'a> EventView<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn all_banks_slice(&self) -> &[u8] {
+    pub fn all_banks_slice(&self) -> &'a [u8] {
         let offset = EVENT_ID_LENGTH
             + EVENT_TRIGGER_MASK_LENGTH
             + EVENT_SERIAL_NUMBER_LENGTH
@@ -842,7 +842,7 @@ impl<'a> EventView<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a EventView<'a> {
+impl<'a> IntoIterator for &'_ EventView<'a> {
     type Item = BankView<'a>;
     type IntoIter = BankViews<'a>;
 

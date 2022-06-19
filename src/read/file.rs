@@ -493,7 +493,7 @@ impl<'a> TryFrom<&'a [u8]> for FileView<'a> {
         })
     }
 }
-impl<'a> IntoIterator for &'a FileView<'a> {
+impl<'a> IntoIterator for &'_ FileView<'a> {
     type Item = EventView<'a>;
     type IntoIter = EventViews<'a>;
 
