@@ -563,7 +563,7 @@ fn valid_b16_le_event_view() {
     assert_eq!(4, event.timestamp());
     assert_eq!(1, event.flags());
 
-    for bank in &event {
+    for bank in event {
         assert_eq!("BANK", bank.name());
         assert_eq!([255], bank.data_slice());
     }
@@ -594,7 +594,7 @@ fn valid_b16_be_event_view() {
     assert_eq!(4, event.timestamp());
     assert_eq!(1, event.flags());
 
-    for bank in &event {
+    for bank in event {
         assert_eq!("BANK", bank.name());
         assert_eq!([255], bank.data_slice());
     }
@@ -753,7 +753,7 @@ fn valid_b32_le_event_view() {
     assert_eq!(4, event.timestamp());
     assert_eq!(17, event.flags());
 
-    for bank in &event {
+    for bank in event {
         assert_eq!("BANK", bank.name());
         assert_eq!([255], bank.data_slice());
     }
@@ -784,7 +784,7 @@ fn valid_b32a_le_event_view() {
     assert_eq!(4, event.timestamp());
     assert_eq!(49, event.flags());
 
-    for bank in &event {
+    for bank in event {
         assert_eq!("BANK", bank.name());
         assert_eq!([255], bank.data_slice());
     }

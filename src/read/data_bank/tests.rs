@@ -182,7 +182,7 @@ fn iterator_bank16_views() {
     let buffer = [66u8, 65, 78, 75, 1, 0, 5, 0, 1, 1, 1, 1, 1];
     let bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
     assert_eq!(5, bank.into_iter().count());
-    for num in &bank {
+    for num in bank {
         let num = u8::from_le_bytes(num.try_into().unwrap());
         assert_eq!(1, num);
     }
@@ -379,7 +379,7 @@ fn iterator_bank32_views() {
     let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 5, 0, 0, 0, 1, 1, 1, 1, 1];
     let bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
     assert_eq!(5, bank.into_iter().count());
-    for num in &bank {
+    for num in bank {
         let num = u8::from_le_bytes(num.try_into().unwrap());
         assert_eq!(1, num);
     }
@@ -598,7 +598,7 @@ fn iterator_bank32a_views() {
     ];
     let bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
     assert_eq!(5, bank.into_iter().count());
-    for num in &bank {
+    for num in bank {
         let num = u8::from_le_bytes(num.try_into().unwrap());
         assert_eq!(1, num);
     }

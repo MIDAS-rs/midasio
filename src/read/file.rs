@@ -322,7 +322,7 @@ impl<'a> FileView<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn initial_odb(&self) -> &[u8] {
+    pub fn initial_odb(&self) -> &'a [u8] {
         let offset = ODB_ID_LENGTH + ODB_MI_LENGTH + ODB_RUN_NUMBER_LENGTH + ODB_TIME_STAMP_LENGTH;
         let size = self.slice[offset..][..ODB_SIZE_LENGTH].try_into().unwrap();
         let size: usize = match self.endianness {
@@ -380,7 +380,7 @@ impl<'a> FileView<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn final_odb(&self) -> &[u8] {
+    pub fn final_odb(&self) -> &'a [u8] {
         let mut events = self.into_iter();
         for _ in events.by_ref() {}
 
@@ -493,7 +493,7 @@ impl<'a> TryFrom<&'a [u8]> for FileView<'a> {
         })
     }
 }
-impl<'a> IntoIterator for &'_ FileView<'a> {
+impl<'a> IntoIterator for FileView<'a> {
     type Item = EventView<'a>;
     type IntoIter = EventViews<'a>;
 

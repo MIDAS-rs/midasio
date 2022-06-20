@@ -146,7 +146,7 @@ impl<'a> Bank16View<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> &'a str {
         std::str::from_utf8(self.name_slice()).unwrap()
     }
 
@@ -192,7 +192,7 @@ impl<'a> Bank16View<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn data_slice(&self) -> &[u8] {
+    pub fn data_slice(&self) -> &'a [u8] {
         BankSlice::data_slice(self)
     }
 
@@ -226,7 +226,7 @@ impl<'a> Bank16View<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a Bank16View<'a> {
+impl<'a> IntoIterator for Bank16View<'a> {
     /// The type of elements being iterated over. The length of each slice is fixed to [`DataType::size()`].
     type Item = &'a [u8];
     type IntoIter = ChunksExact<'a, u8>;
@@ -247,7 +247,7 @@ impl<'a> IntoIterator for &'a Bank16View<'a> {
     ///
     /// assert_eq!(2, iter.count());
     ///
-    /// for u16_slice in &data_bank {
+    /// for u16_slice in data_bank {
     ///     assert_eq!([100, 155], u16_slice);
     /// }
     /// # Ok(())
@@ -371,7 +371,7 @@ impl<'a> Bank32View<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> &'a str {
         std::str::from_utf8(self.name_slice()).unwrap()
     }
 
@@ -417,7 +417,7 @@ impl<'a> Bank32View<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn data_slice(&self) -> &[u8] {
+    pub fn data_slice(&self) -> &'a [u8] {
         BankSlice::data_slice(self)
     }
 
@@ -451,7 +451,7 @@ impl<'a> Bank32View<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a Bank32View<'a> {
+impl<'a> IntoIterator for Bank32View<'a> {
     /// The type of elements being iterated over. The length of each slice is fixed to [`DataType::size()`].
     type Item = &'a [u8];
     type IntoIter = ChunksExact<'a, u8>;
@@ -471,7 +471,7 @@ impl<'a> IntoIterator for &'a Bank32View<'a> {
     /// let iter = data_bank.into_iter();
     /// assert_eq!(2, iter.count());
     ///
-    /// for u16_slice in &data_bank {
+    /// for u16_slice in data_bank {
     ///     assert_eq!([100, 155], u16_slice);
     /// }
     /// # Ok(())
@@ -596,7 +596,7 @@ impl<'a> Bank32AView<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> &'a str {
         std::str::from_utf8(self.name_slice()).unwrap()
     }
 
@@ -642,7 +642,7 @@ impl<'a> Bank32AView<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn data_slice(&self) -> &[u8] {
+    pub fn data_slice(&self) -> &'a [u8] {
         BankSlice::data_slice(self)
     }
 
@@ -676,7 +676,7 @@ impl<'a> Bank32AView<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a Bank32AView<'a> {
+impl<'a> IntoIterator for Bank32AView<'a> {
     /// The type of elements being iterated over. The length of each slice is fixed to [`DataType::size()`].
     type Item = &'a [u8];
     type IntoIter = ChunksExact<'a, u8>;
@@ -696,7 +696,7 @@ impl<'a> IntoIterator for &'a Bank32AView<'a> {
     /// let iter = data_bank.into_iter();
     /// assert_eq!(2, iter.count());
     ///
-    /// for u16_slice in &data_bank {
+    /// for u16_slice in data_bank {
     ///     assert_eq!([100, 155], u16_slice);
     /// }
     /// # Ok(())
@@ -769,7 +769,7 @@ impl<'a> BankView<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> &'a str {
         match self {
             BankView::B16(bank) => bank.name(),
             BankView::B32(bank) => bank.name(),
@@ -819,7 +819,7 @@ impl<'a> BankView<'a> {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn data_slice(&self) -> &[u8] {
+    pub fn data_slice(&self) -> &'a [u8] {
         match self {
             BankView::B16(bank) => bank.data_slice(),
             BankView::B32(bank) => bank.data_slice(),
@@ -941,7 +941,7 @@ impl<'a> BankView<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'a BankView<'a> {
+impl<'a> IntoIterator for BankView<'a> {
     /// The type of elements being iterated over. The length of each slice is fixed to [`DataType::size()`].
     type Item = &'a [u8];
     type IntoIter = ChunksExact<'a, u8>;
@@ -961,7 +961,7 @@ impl<'a> IntoIterator for &'a BankView<'a> {
     /// let iter = bank_32.into_iter();
     /// assert_eq!(4, iter.count());
     ///
-    /// for u8_slice in &bank_32 {
+    /// for u8_slice in bank_32 {
     ///     assert_eq!([100], u8_slice);
     /// }
     /// # Ok(())
@@ -985,7 +985,7 @@ impl<'a> IntoIterator for &'a BankView<'a> {
 //    types (see [`Type`] enum and the valid TryFrom conversions).
 // 4) The "size" field correctly matches the size of the data in the bank.
 // 5) The data slice should contain an integer number of [`DataType`] items.
-pub(in crate::read) trait BankSlice {
+pub(in crate::read) trait BankSlice<'a> {
     // Number of ASCII alphanumeric characters that determine the name of the data bank.
     const NAME_LENGTH: usize;
     // Number of bytes that represent the [`DataType`] field in the data bank.
@@ -1000,48 +1000,48 @@ pub(in crate::read) trait BankSlice {
         Self::NAME_LENGTH + Self::TYPE_LENGTH + Self::SIZE_LENGTH + Self::FOOTER_LENGTH;
 
     // Return a complete slice of bytes that represent a data bank (header plus data).
-    fn data_bank_slice(&self) -> &[u8];
+    fn data_bank_slice(&self) -> &'a [u8];
     // Return the endianness of the bank
     fn endianness(&self) -> Endianness;
 
     // Return the slice of bytes in the data bank which represent its name.
-    fn name_slice(&self) -> &[u8] {
+    fn name_slice(&self) -> &'a [u8] {
         &self.data_bank_slice()[..Self::NAME_LENGTH]
     }
 
     // Return the slice of bytes in the data bank which represent the data type.
-    fn data_type_slice(&self) -> &[u8] {
+    fn data_type_slice(&self) -> &'a [u8] {
         let offset = Self::NAME_LENGTH;
         &self.data_bank_slice()[offset..][..Self::TYPE_LENGTH]
     }
 
     // Return the slice of bytes in the bank which represent the data size.
-    fn data_size_slice(&self) -> &[u8] {
+    fn data_size_slice(&self) -> &'a [u8] {
         let offset = Self::NAME_LENGTH + Self::TYPE_LENGTH;
         &self.data_bank_slice()[offset..][..Self::SIZE_LENGTH]
     }
 
     // Return the reserved bytes between the header and the data.
-    fn header_footer_slice(&self) -> &[u8] {
+    fn header_footer_slice(&self) -> &'a [u8] {
         let offset = Self::NAME_LENGTH + Self::TYPE_LENGTH + Self::SIZE_LENGTH;
         &self.data_bank_slice()[offset..][..Self::FOOTER_LENGTH]
     }
 
     // Return the actual data slice.
-    fn data_slice(&self) -> &[u8] {
+    fn data_slice(&self) -> &'a [u8] {
         let offset =
             Self::NAME_LENGTH + Self::TYPE_LENGTH + Self::SIZE_LENGTH + Self::FOOTER_LENGTH;
         &self.data_bank_slice()[offset..]
     }
 }
 
-impl BankSlice for Bank16View<'_> {
+impl<'a> BankSlice<'a> for Bank16View<'a> {
     const NAME_LENGTH: usize = crate::B16_NAME_LENGTH;
     const TYPE_LENGTH: usize = crate::B16_DATA_TYPE_LENGTH;
     const SIZE_LENGTH: usize = crate::B16_SIZE_LENGTH;
     const FOOTER_LENGTH: usize = crate::B16_RESERVED_LENGTH;
 
-    fn data_bank_slice(&self) -> &[u8] {
+    fn data_bank_slice(&self) -> &'a [u8] {
         self.slice
     }
     fn endianness(&self) -> Endianness {
@@ -1049,13 +1049,13 @@ impl BankSlice for Bank16View<'_> {
     }
 }
 
-impl BankSlice for Bank32View<'_> {
+impl<'a> BankSlice<'a> for Bank32View<'a> {
     const NAME_LENGTH: usize = crate::B32_NAME_LENGTH;
     const TYPE_LENGTH: usize = crate::B32_DATA_TYPE_LENGTH;
     const SIZE_LENGTH: usize = crate::B32_SIZE_LENGTH;
     const FOOTER_LENGTH: usize = crate::B32_RESERVED_LENGTH;
 
-    fn data_bank_slice(&self) -> &[u8] {
+    fn data_bank_slice(&self) -> &'a [u8] {
         self.slice
     }
     fn endianness(&self) -> Endianness {
@@ -1063,13 +1063,13 @@ impl BankSlice for Bank32View<'_> {
     }
 }
 
-impl BankSlice for Bank32AView<'_> {
+impl<'a> BankSlice<'a> for Bank32AView<'a> {
     const NAME_LENGTH: usize = crate::B32A_NAME_LENGTH;
     const TYPE_LENGTH: usize = crate::B32A_DATA_TYPE_LENGTH;
     const SIZE_LENGTH: usize = crate::B32A_SIZE_LENGTH;
     const FOOTER_LENGTH: usize = crate::B32A_RESERVED_LENGTH;
 
-    fn data_bank_slice(&self) -> &[u8] {
+    fn data_bank_slice(&self) -> &'a [u8] {
         self.slice
     }
     fn endianness(&self) -> Endianness {
@@ -1086,7 +1086,7 @@ fn are_all_ascii_alphanumeric(slice: &[u8]) -> bool {
     true
 }
 
-fn error_in_bank_view<T: BankSlice>(bank: &T) -> Result<(), TryBankViewFromSliceError> {
+fn error_in_bank_view<'a, T: BankSlice<'a>>(bank: &T) -> Result<(), TryBankViewFromSliceError> {
     if bank.data_bank_slice().len() < T::HEADER_LENGTH {
         return Err(TryBankViewFromSliceError::SizeMismatch);
     }

@@ -92,7 +92,7 @@ impl<'a> Bank16Views<'a> {
     /// banks.next();
     /// assert_eq!([1, 1], banks.remainder());
     /// ```
-    pub fn remainder(&self) -> &[u8] {
+    pub fn remainder(&self) -> &'a [u8] {
         &self.slice[self.curr..]
     }
 }
@@ -221,7 +221,7 @@ impl<'a> Bank32Views<'a> {
     /// banks.next();
     /// assert_eq!([1, 1], banks.remainder());
     /// ```
-    pub fn remainder(&self) -> &[u8] {
+    pub fn remainder(&self) -> &'a [u8] {
         &self.slice[self.curr..]
     }
 }
@@ -350,7 +350,7 @@ impl<'a> Bank32AViews<'a> {
     /// banks.next();
     /// assert_eq!([1, 1], banks.remainder());
     /// ```
-    pub fn remainder(&self) -> &[u8] {
+    pub fn remainder(&self) -> &'a [u8] {
         &self.slice[self.curr..]
     }
 }
@@ -437,7 +437,7 @@ impl<'a> BankViews<'a> {
     /// banks.next();
     /// assert_eq!([1, 1], banks.remainder());
     /// ```
-    pub fn remainder(&self) -> &[u8] {
+    pub fn remainder(&self) -> &'a [u8] {
         match self {
             BankViews::B16(iter) => &iter.slice[iter.curr..],
             BankViews::B32(iter) => &iter.slice[iter.curr..],
@@ -526,7 +526,7 @@ impl Error for TryEventViewFromSliceError {}
 ///     .collect();
 /// let event = EventView::try_from_be_bytes(&event)?;
 ///
-/// for bank in &event {
+/// for bank in event {
 ///     assert_eq!("BANK", bank.name());
 ///     assert_eq!([255], bank.data_slice());
 /// }
@@ -842,7 +842,7 @@ impl<'a> EventView<'a> {
     }
 }
 
-impl<'a> IntoIterator for &'_ EventView<'a> {
+impl<'a> IntoIterator for EventView<'a> {
     type Item = BankView<'a>;
     type IntoIter = BankViews<'a>;
 
