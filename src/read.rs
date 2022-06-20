@@ -13,10 +13,10 @@
 //! let contents = fs::read("example.mid")?;
 //! let file_view = FileView::try_from(&contents[..])?;
 //!
-//! for event in &file_view {
+//! for event in file_view {
 //!     // Do something with each event in the file
 //!     // ...
-//!     for bank in &event {
+//!     for bank in event {
 //!         // Do something with each data bank
 //!         // ...
 //!     }
