@@ -2,7 +2,6 @@
 
 [![Test Status](https://github.com/DJDuque/midasio/actions/workflows/rust.yml/badge.svg)](https://github.com/DJDuque/midasio/actions/workflows/rust.yml)
 [![Crates.io](https://img.shields.io/crates/v/midasio?labelColor=383f47)](https://crates.io/crates/midasio)
-[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/DJDuque/midasio/latest?labelColor=383f47)](https://github.com/DJDuque/midasio/commits/main)
 
 A Rust library for reading binary MIDAS files. Midasio provides a useful API to
 iterate over events, iterate over data banks, and extract the raw data from the
