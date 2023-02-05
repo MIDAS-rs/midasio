@@ -542,3 +542,57 @@ fn valid_le_file_view() {
     assert_eq!([255], file_view.initial_odb());
     assert_eq!([254], file_view.final_odb());
 }
+
+#[test]
+fn run_number_unchecked_short() {
+    let slice = [128, 0, 255, 255, 0, 0, 0];
+    assert!(matches!(
+        run_number_unchecked(&slice),
+        Err(TryFileViewFromSliceError::IniOdbSizeMismatch)
+    ));
+}
+
+#[test]
+fn run_number_unchecked_bad_bor_id() {
+    let slice = [0, 0, 255, 255, 0, 0, 0, 1];
+    assert!(matches!(
+        run_number_unchecked(&slice),
+        Err(TryFileViewFromSliceError::BadBorId)
+    ));
+}
+
+#[test]
+fn run_number_unchecked_ok() {
+    let slice = [128, 0, 255, 255, 0, 0, 0, 1];
+    assert_eq!(1, run_number_unchecked(&slice).unwrap());
+
+    let slice = [0, 128, 255, 255, 1, 0, 0, 0];
+    assert_eq!(1, run_number_unchecked(&slice).unwrap());
+}
+
+#[test]
+fn initial_timestamp_unchecked_short() {
+    let slice = [128, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0];
+    assert!(matches!(
+        initial_timestamp_unchecked(&slice),
+        Err(TryFileViewFromSliceError::IniOdbSizeMismatch)
+    ));
+}
+
+#[test]
+fn initial_timestamp_unchecked_bad_bor_id() {
+    let slice = [0, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 1];
+    assert!(matches!(
+        initial_timestamp_unchecked(&slice),
+        Err(TryFileViewFromSliceError::BadBorId)
+    ));
+}
+
+#[test]
+fn initial_timestamp_unchecked_ok() {
+    let slice = [128, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 1];
+    assert_eq!(1, initial_timestamp_unchecked(&slice).unwrap());
+
+    let slice = [0, 128, 255, 255, 255, 255, 255, 255, 1, 0, 0, 0];
+    assert_eq!(1, initial_timestamp_unchecked(&slice).unwrap());
+}

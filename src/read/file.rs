@@ -513,5 +513,94 @@ impl<'a> IntoIterator for FileView<'a> {
     }
 }
 
+/// Return the run number assuming that the input slice has the correct MIDAS
+/// file format.
+///
+/// This is useful for checking the run number of a file without having to
+/// parse the entire file. Returns an error if the run number cannot be
+/// determined.
+///
+/// # Examples
+///
+/// ```
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// use midasio::read::file::run_number_unchecked;
+///
+/// let slice = [128, 0, 255, 255, 0, 0, 0, 1];
+///
+/// assert_eq!(run_number_unchecked(&slice)?, 1);
+/// # Ok(())
+/// # }
+/// ```
+pub fn run_number_unchecked(buffer: &[u8]) -> Result<u32, TryFileViewFromSliceError> {
+    if buffer.len() < 8 {
+        return Err(TryFileViewFromSliceError::IniOdbSizeMismatch);
+    }
+
+    let endianness: Endianness;
+    let odb_id = buffer[..ODB_ID_LENGTH].try_into().unwrap();
+    let odb_id = u16::from_le_bytes(odb_id);
+    if odb_id == BOR_ID {
+        endianness = Endianness::LittleEndian;
+    } else if odb_id.swap_bytes() == BOR_ID {
+        endianness = Endianness::BigEndian;
+    } else {
+        return Err(TryFileViewFromSliceError::BadBorId);
+    }
+
+    let offset = ODB_ID_LENGTH + ODB_MI_LENGTH;
+    let run_number = buffer[offset..][..ODB_RUN_NUMBER_LENGTH]
+        .try_into()
+        .unwrap();
+    match endianness {
+        Endianness::LittleEndian => Ok(u32::from_le_bytes(run_number)),
+        Endianness::BigEndian => Ok(u32::from_be_bytes(run_number)),
+    }
+}
+
+/// Return the timestamp of the initial ODB dump assuming that the input slice
+/// has the correct MIDAS file format.
+///
+/// This is useful for checking the timestamp of a file without having to parse
+/// the entire file. Returns an error if the timestamp cannot be determined.
+///
+/// # Examples
+///
+/// ```
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// use midasio::read::file::initial_timestamp_unchecked;
+///
+/// let slice = [128, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 1];
+///
+/// assert_eq!(initial_timestamp_unchecked(&slice)?, 1);
+/// # Ok(())
+/// # }
+/// ```
+pub fn initial_timestamp_unchecked(buffer: &[u8]) -> Result<u32, TryFileViewFromSliceError> {
+    if buffer.len() < 12 {
+        return Err(TryFileViewFromSliceError::IniOdbSizeMismatch);
+    }
+
+    let endianness: Endianness;
+    let odb_id = buffer[..ODB_ID_LENGTH].try_into().unwrap();
+    let odb_id = u16::from_le_bytes(odb_id);
+    if odb_id == BOR_ID {
+        endianness = Endianness::LittleEndian;
+    } else if odb_id.swap_bytes() == BOR_ID {
+        endianness = Endianness::BigEndian;
+    } else {
+        return Err(TryFileViewFromSliceError::BadBorId);
+    }
+
+    let offset = ODB_ID_LENGTH + ODB_MI_LENGTH + ODB_RUN_NUMBER_LENGTH;
+    let timestamp = buffer[offset..][..ODB_TIME_STAMP_LENGTH]
+        .try_into()
+        .unwrap();
+    match endianness {
+        Endianness::LittleEndian => Ok(u32::from_le_bytes(timestamp)),
+        Endianness::BigEndian => Ok(u32::from_be_bytes(timestamp)),
+    }
+}
+
 #[cfg(test)]
 mod tests;
