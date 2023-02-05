@@ -29,16 +29,3 @@ for event in file_view {
     }
 }
 ```
-
-## Want to contribute?
-
-There are multiple ways to contribute:
-- Install and test Midasio. If it doesn't work as expected please [open an
-  issue](https://github.com/DJDuque/midasio/issues/new).
-- Comment/propose a fix on some of the current [open 
-issues](https://github.com/DJDuque/midasio/issues).
-- Read through the [documentation](https://docs.rs/midasio). If there is 
-  something confusing, or you have a suggestion for something that could be 
-  improved, please let the maintainer(s) know.
-- Help evaluate [open pull requests](https://github.com/DJDuque/midasio/pulls),
-  by testing locally and reviewing what is proposed.
