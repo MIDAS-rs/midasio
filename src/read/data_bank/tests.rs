@@ -7,14 +7,14 @@ fn valid_le_bank16_views() {
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::Byte));
     assert_eq!(0, bank.data_slice().len());
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [66u8, 65, 78, 75, 3, 0, 1, 0, 100];
     let bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::U8));
     assert_eq!(1, bank.data_slice().len());
-    assert_eq!(7, bank.padding());
+    assert_eq!(7, bank.required_padding());
     assert_eq!([100], bank.data_slice());
 }
 
@@ -22,29 +22,23 @@ fn valid_le_bank16_views() {
 fn invalid_le_bank16_views() {
     let buffer = [66u8, 65, 78, 75, 1, 0, 0];
     let bank = Bank16View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 1];
     let bank = Bank16View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 200, 75, 1, 0, 1, 0, 1];
     let bank = Bank16View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 4, 0, 1, 0, 100];
     let bank = Bank16View::try_from_le_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::IncompleteData)
-    ));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 1, 0, 1];
     let bank = Bank16View::try_from_le_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::UnknownDataType)
-    ));
+    assert!(bank.is_err());
 }
 
 #[test]
@@ -54,14 +48,14 @@ fn valid_be_bank16_views() {
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::Byte));
     assert_eq!(0, bank.data_slice().len());
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [66u8, 65, 78, 75, 0, 3, 0, 1, 100];
     let bank = Bank16View::try_from_be_bytes(&buffer).unwrap();
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::U8));
     assert_eq!(1, bank.data_slice().len());
-    assert_eq!(7, bank.padding());
+    assert_eq!(7, bank.required_padding());
     assert_eq!([100], bank.data_slice());
 }
 
@@ -69,29 +63,23 @@ fn valid_be_bank16_views() {
 fn invalid_be_bank16_views() {
     let buffer = [66u8, 65, 78, 75, 0, 1, 0];
     let bank = Bank16View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 1, 0, 0, 1];
     let bank = Bank16View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 200, 75, 0, 1, 0, 1, 1];
     let bank = Bank16View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 4, 0, 1, 100];
     let bank = Bank16View::try_from_be_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::IncompleteData)
-    ));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 20, 0, 1, 1];
     let bank = Bank16View::try_from_be_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::UnknownDataType)
-    ));
+    assert!(bank.is_err());
 }
 
 #[test]
@@ -160,21 +148,21 @@ fn data_slices_bank16_views() {
 fn padding_bank16_views() {
     let buffer = [66u8, 65, 78, 75, 1, 0, 5, 0, 1, 2, 3, 4, 5];
     let bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    assert_eq!(3, bank.padding());
+    assert_eq!(3, bank.required_padding());
 
     let buffer = [48u8, 49, 110, 107, 14, 0, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8];
     let bank = Bank16View::try_from_le_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [
         66u8, 65, 78, 75, 0, 10, 0, 16, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
     ];
     let bank = Bank16View::try_from_be_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [48u8, 49, 110, 107, 0, 1, 0, 0];
     let bank = Bank16View::try_from_be_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 }
 
 #[test]
@@ -198,14 +186,14 @@ fn valid_le_bank32_views() {
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::Byte));
     assert_eq!(0, bank.data_slice().len());
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [66u8, 65, 78, 75, 3, 0, 0, 0, 1, 0, 0, 0, 100];
     let bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::U8));
     assert_eq!(1, bank.data_slice().len());
-    assert_eq!(7, bank.padding());
+    assert_eq!(7, bank.required_padding());
     assert_eq!([100], bank.data_slice());
 }
 
@@ -213,29 +201,23 @@ fn valid_le_bank32_views() {
 fn invalid_le_bank32_views() {
     let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 1, 0, 0];
     let bank = Bank32View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 200, 75, 1, 0, 0, 0, 1, 0, 0, 0, 1];
     let bank = Bank32View::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 1, 0, 0, 0, 100];
     let bank = Bank32View::try_from_le_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::IncompleteData)
-    ));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 0, 0, 1, 0, 0, 0, 1];
     let bank = Bank32View::try_from_le_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::UnknownDataType)
-    ));
+    assert!(bank.is_err());
 }
 
 #[test]
@@ -245,14 +227,14 @@ fn valid_be_bank32_views() {
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::Byte));
     assert_eq!(0, bank.data_slice().len());
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 3, 0, 0, 0, 1, 100];
     let bank = Bank32View::try_from_be_bytes(&buffer).unwrap();
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::U8));
     assert_eq!(1, bank.data_slice().len());
-    assert_eq!(7, bank.padding());
+    assert_eq!(7, bank.required_padding());
     assert_eq!([100], bank.data_slice());
 }
 
@@ -260,29 +242,23 @@ fn valid_be_bank32_views() {
 fn invalid_be_bank32_views() {
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0];
     let bank = Bank32View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     let bank = Bank32View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 200, 75, 0, 0, 0, 1, 0, 0, 0, 1, 1];
     let bank = Bank32View::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 4, 0, 0, 0, 1, 100];
     let bank = Bank32View::try_from_be_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::IncompleteData)
-    ));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 20, 0, 0, 0, 1, 1];
     let bank = Bank32View::try_from_be_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::UnknownDataType)
-    ));
+    assert!(bank.is_err());
 }
 
 #[test]
@@ -355,23 +331,23 @@ fn data_slices_bank32_views() {
 fn padding_bank32_views() {
     let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 5, 0, 0, 0, 1, 2, 3, 4, 5];
     let bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    assert_eq!(3, bank.padding());
+    assert_eq!(3, bank.required_padding());
 
     let buffer = [
         48u8, 49, 110, 107, 14, 0, 0, 0, 8, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
     ];
     let bank = Bank32View::try_from_le_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [
         66u8, 65, 78, 75, 0, 0, 0, 10, 0, 0, 0, 16, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
     ];
     let bank = Bank32View::try_from_be_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [48u8, 49, 110, 107, 0, 0, 0, 1, 0, 0, 0, 0];
     let bank = Bank32View::try_from_be_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 }
 
 #[test]
@@ -395,14 +371,14 @@ fn valid_le_bank32a_views() {
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::Byte));
     assert_eq!(0, bank.data_slice().len());
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [66u8, 65, 78, 75, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 100];
     let bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::U8));
     assert_eq!(1, bank.data_slice().len());
-    assert_eq!(7, bank.padding());
+    assert_eq!(7, bank.required_padding());
     assert_eq!([100], bank.data_slice());
 }
 
@@ -410,29 +386,23 @@ fn valid_le_bank32a_views() {
 fn invalid_le_bank32a_views() {
     let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 200, 75, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 100];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::IncompleteData)
-    ));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 20, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_le_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::UnknownDataType)
-    ));
+    assert!(bank.is_err());
 }
 
 #[test]
@@ -442,14 +412,14 @@ fn valid_be_bank32a_views() {
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::Byte));
     assert_eq!(0, bank.data_slice().len());
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 100];
     let bank = Bank32AView::try_from_be_bytes(&buffer).unwrap();
     assert_eq!("BANK", bank.name());
     assert!(matches!(bank.data_type(), DataType::U8));
     assert_eq!(1, bank.data_slice().len());
-    assert_eq!(7, bank.padding());
+    assert_eq!(7, bank.required_padding());
     assert_eq!([100], bank.data_slice());
 }
 
@@ -457,29 +427,23 @@ fn valid_be_bank32a_views() {
 fn invalid_be_bank32a_views() {
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::SizeMismatch)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 200, 75, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
-    assert!(matches!(bank, Err(TryBankViewFromSliceError::NonAsciiName)));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0, 100];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::IncompleteData)
-    ));
+    assert!(bank.is_err());
 
     let buffer = [66u8, 65, 78, 75, 0, 0, 0, 20, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     let bank = Bank32AView::try_from_be_bytes(&buffer);
-    assert!(matches!(
-        bank,
-        Err(TryBankViewFromSliceError::UnknownDataType)
-    ));
+    assert!(bank.is_err());
 }
 
 #[test]
@@ -571,24 +535,24 @@ fn padding_bank32a_views() {
         66u8, 65, 78, 75, 1, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5,
     ];
     let bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    assert_eq!(3, bank.padding());
+    assert_eq!(3, bank.required_padding());
 
     let buffer = [
         48u8, 49, 110, 107, 14, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
     ];
     let bank = Bank32AView::try_from_le_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [
-        66u8, 65, 78, 75, 0, 0, 0, 10, 0, 0, 0, 16, 1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0, 1, 2, 3, 4,
-        5, 6, 7, 8,
+        66u8, 65, 78, 75, 0, 0, 0, 10, 0, 0, 0, 16, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+        12, 13, 14, 15, 16,
     ];
     let bank = Bank32AView::try_from_be_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 
     let buffer = [48u8, 49, 110, 107, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0];
     let bank = Bank32AView::try_from_be_bytes(&buffer).unwrap();
-    assert_eq!(0, bank.padding());
+    assert_eq!(0, bank.required_padding());
 }
 
 #[test]
@@ -676,9 +640,9 @@ fn padding_bank_views() {
     ];
     let bank_32a = BankView::B32A(Bank32AView::try_from_le_bytes(&buffer).unwrap());
 
-    assert_eq!(7, bank_16.padding());
-    assert_eq!(4, bank_32.padding());
-    assert_eq!(4, bank_32a.padding());
+    assert_eq!(7, bank_16.required_padding());
+    assert_eq!(4, bank_32.required_padding());
+    assert_eq!(4, bank_32a.required_padding());
 }
 
 #[test]

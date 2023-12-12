@@ -11,3 +11,5 @@ categories = ["parser-implementations", "science"]
 documentation = "https://docs.rs/midasio"
 
 [dependencies]
+thiserror = "1.0.50"
+winnow = "0.5.28"

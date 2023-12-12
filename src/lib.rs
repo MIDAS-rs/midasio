@@ -5,6 +5,8 @@
 
 use std::{error::Error, fmt, mem::size_of};
 
+pub use crate::read::data_bank;
+
 //MIDAS File constants
 const ODB_ID_LENGTH: usize = 2;
 const ODB_MI_LENGTH: usize = 2;

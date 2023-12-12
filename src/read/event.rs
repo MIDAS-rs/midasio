@@ -123,7 +123,7 @@ impl<'a> Iterator for Bank16Views<'a> {
         };
         match data_bank {
             Ok(data_bank) => {
-                let advance = Bank16View::HEADER_LENGTH + size + data_bank.padding();
+                let advance = Bank16View::HEADER_LENGTH + size + data_bank.required_padding();
                 if advance > self.slice.len() - self.curr {
                     return None;
                 }
@@ -252,7 +252,7 @@ impl<'a> Iterator for Bank32Views<'a> {
         };
         match data_bank {
             Ok(data_bank) => {
-                let advance = Bank32View::HEADER_LENGTH + size + data_bank.padding();
+                let advance = Bank32View::HEADER_LENGTH + size + data_bank.required_padding();
                 if advance > self.slice.len() - self.curr {
                     return None;
                 }
@@ -381,7 +381,7 @@ impl<'a> Iterator for Bank32AViews<'a> {
         };
         match data_bank {
             Ok(data_bank) => {
-                let advance = Bank32AView::HEADER_LENGTH + size + data_bank.padding();
+                let advance = Bank32AView::HEADER_LENGTH + size + data_bank.required_padding();
                 if advance > self.slice.len() - self.curr {
                     return None;
                 }
