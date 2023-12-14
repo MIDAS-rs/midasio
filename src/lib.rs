@@ -7,35 +7,7 @@ use std::{error::Error, fmt, mem::size_of};
 
 pub use crate::read::data_bank;
 pub use crate::read::event;
-
-//MIDAS File constants
-const ODB_ID_LENGTH: usize = 2;
-const ODB_MI_LENGTH: usize = 2;
-const ODB_RUN_NUMBER_LENGTH: usize = 4;
-const ODB_TIME_STAMP_LENGTH: usize = 4;
-const ODB_SIZE_LENGTH: usize = 4;
-const ODB_HEADER_LENGTH: usize =
-    ODB_ID_LENGTH + ODB_MI_LENGTH + ODB_RUN_NUMBER_LENGTH + ODB_TIME_STAMP_LENGTH + ODB_SIZE_LENGTH;
-const BOR_ID: u16 = 32768;
-const ODB_MI: u16 = 18765;
-const EOR_ID: u16 = 32769;
-
-// MIDAS Event constants
-// Length in bytes of each field
-const EVENT_ID_LENGTH: usize = 2;
-const EVENT_TRIGGER_MASK_LENGTH: usize = 2;
-const EVENT_SERIAL_NUMBER_LENGTH: usize = 4;
-const EVENT_TIME_STAMP_LENGTH: usize = 4;
-const EVENT_SIZE_LENGTH: usize = 4;
-const EVENT_ALL_BANKS_SIZE_LENGTH: usize = 4;
-const EVENT_FLAGS_LENGTH: usize = 4;
-const EVENT_HEADER_LENGTH: usize = EVENT_ID_LENGTH
-    + EVENT_TRIGGER_MASK_LENGTH
-    + EVENT_SERIAL_NUMBER_LENGTH
-    + EVENT_TIME_STAMP_LENGTH
-    + EVENT_SIZE_LENGTH
-    + EVENT_ALL_BANKS_SIZE_LENGTH
-    + EVENT_FLAGS_LENGTH;
+pub use crate::read::file;
 
 /// Read a MIDAS file without modifying its contents.
 pub mod read;
@@ -157,41 +129,6 @@ macro_rules! impl_try_type_from {
     };
 }
 impl_try_type_from!(u8, u16, u32, u64, u128);
-
-#[derive(Clone, Copy, Debug)]
-enum Endianness {
-    LittleEndian,
-    BigEndian,
-}
-
-// Possible variants of data banks.
-#[derive(Clone, Copy, Debug)]
-enum BankType {
-    B16,
-    B32,
-    B32A,
-}
-impl TryFrom<u32> for BankType {
-    type Error = TryBankTypeFromUnsignedError;
-    // These are the unsigned integer representation of the [`BankType`] in the flags field of the
-    // MIDAS events.
-    fn try_from(num: u32) -> Result<Self, Self::Error> {
-        match num {
-            1 => Ok(BankType::B16),
-            17 => Ok(BankType::B32),
-            49 => Ok(BankType::B32A),
-            _ => Err(TryBankTypeFromUnsignedError),
-        }
-    }
-}
-// The error type returned when conversion from unsigned integer to [`BankType`] fails.
-#[derive(Clone, Copy, Debug)]
-struct TryBankTypeFromUnsignedError;
-impl fmt::Display for TryBankTypeFromUnsignedError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "conversion from unknown value attempted")
-    }
-}
 
 #[cfg(test)]
 mod tests;

@@ -95,7 +95,9 @@ where
     }
 }
 
-fn event_view<'a>(endian: Endianness) -> impl Parser<&'a [u8], EventView<'a>, ContextError> {
+pub(crate) fn event_view<'a>(
+    endian: Endianness,
+) -> impl Parser<&'a [u8], EventView<'a>, ContextError> {
     move |input: &mut &'a [u8]| {
         let (event_id, trigger_mask, serial_number, timestamp, bank_views) = (
             u16(endian).context(StrContext::Label("event id")),
