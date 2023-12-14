@@ -77,7 +77,9 @@ pub struct Bank16View<'a> {
     data_slice: &'a [u8],
 }
 
-fn bank_16_view<'a>(endian: Endianness) -> impl Parser<&'a [u8], Bank16View<'a>, ContextError> {
+pub(crate) fn bank_16_view<'a>(
+    endian: Endianness,
+) -> impl Parser<&'a [u8], Bank16View<'a>, ContextError> {
     move |input: &mut &'a [u8]| {
         let (name, data_type) = (
             take_while(4, AsChar::is_alphanum)
@@ -276,7 +278,9 @@ pub struct Bank32View<'a> {
     data_slice: &'a [u8],
 }
 
-fn bank_32_view<'a>(endian: Endianness) -> impl Parser<&'a [u8], Bank32View<'a>, ContextError> {
+pub(crate) fn bank_32_view<'a>(
+    endian: Endianness,
+) -> impl Parser<&'a [u8], Bank32View<'a>, ContextError> {
     move |input: &mut &'a [u8]| {
         let (name, data_type) = (
             take_while(4, AsChar::is_alphanum)
@@ -476,7 +480,9 @@ pub struct Bank32AView<'a> {
     data_slice: &'a [u8],
 }
 
-fn bank_32a_view<'a>(endian: Endianness) -> impl Parser<&'a [u8], Bank32AView<'a>, ContextError> {
+pub(crate) fn bank_32a_view<'a>(
+    endian: Endianness,
+) -> impl Parser<&'a [u8], Bank32AView<'a>, ContextError> {
     move |input: &mut &'a [u8]| {
         let (name, data_type) = (
             take_while(4, AsChar::is_alphanum)
@@ -670,6 +676,22 @@ pub enum BankView<'a> {
     B32A(Bank32AView<'a>),
 }
 
+impl<'a> From<Bank16View<'a>> for BankView<'a> {
+    fn from(bank: Bank16View<'a>) -> Self {
+        Self::B16(bank)
+    }
+}
+impl<'a> From<Bank32View<'a>> for BankView<'a> {
+    fn from(bank: Bank32View<'a>) -> Self {
+        Self::B32(bank)
+    }
+}
+impl<'a> From<Bank32AView<'a>> for BankView<'a> {
+    fn from(bank: Bank32AView<'a>) -> Self {
+        Self::B32A(bank)
+    }
+}
+
 impl<'a> BankView<'a> {
     /// Return the name of the data bank. This is guaranteed to be 4 ASCII
     /// alphanumeric characters.
@@ -858,34 +880,3 @@ impl<'a> IntoIterator for BankView<'a> {
 
 #[cfg(test)]
 mod tests;
-
-//-------- To be deleted after the winnow re-write is complete. ---------------
-pub(in crate::read) trait BankSlice<'a> {
-    const NAME_LENGTH: usize;
-    const TYPE_LENGTH: usize;
-    const SIZE_LENGTH: usize;
-    const FOOTER_LENGTH: usize;
-    const HEADER_LENGTH: usize =
-        Self::NAME_LENGTH + Self::TYPE_LENGTH + Self::SIZE_LENGTH + Self::FOOTER_LENGTH;
-}
-
-impl<'a> BankSlice<'a> for Bank16View<'a> {
-    const NAME_LENGTH: usize = crate::B16_NAME_LENGTH;
-    const TYPE_LENGTH: usize = crate::B16_DATA_TYPE_LENGTH;
-    const SIZE_LENGTH: usize = crate::B16_SIZE_LENGTH;
-    const FOOTER_LENGTH: usize = crate::B16_RESERVED_LENGTH;
-}
-
-impl<'a> BankSlice<'a> for Bank32View<'a> {
-    const NAME_LENGTH: usize = crate::B32_NAME_LENGTH;
-    const TYPE_LENGTH: usize = crate::B32_DATA_TYPE_LENGTH;
-    const SIZE_LENGTH: usize = crate::B32_SIZE_LENGTH;
-    const FOOTER_LENGTH: usize = crate::B32_RESERVED_LENGTH;
-}
-
-impl<'a> BankSlice<'a> for Bank32AView<'a> {
-    const NAME_LENGTH: usize = crate::B32A_NAME_LENGTH;
-    const TYPE_LENGTH: usize = crate::B32A_DATA_TYPE_LENGTH;
-    const SIZE_LENGTH: usize = crate::B32A_SIZE_LENGTH;
-    const FOOTER_LENGTH: usize = crate::B32A_RESERVED_LENGTH;
-}

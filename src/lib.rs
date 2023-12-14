@@ -6,6 +6,7 @@
 use std::{error::Error, fmt, mem::size_of};
 
 pub use crate::read::data_bank;
+pub use crate::read::event;
 
 //MIDAS File constants
 const ODB_ID_LENGTH: usize = 2;
@@ -35,30 +36,6 @@ const EVENT_HEADER_LENGTH: usize = EVENT_ID_LENGTH
     + EVENT_SIZE_LENGTH
     + EVENT_ALL_BANKS_SIZE_LENGTH
     + EVENT_FLAGS_LENGTH;
-
-// Data Bank constants
-// 16-bit Banks
-// Length in bytes of each field
-const B16_NAME_LENGTH: usize = 4;
-const B16_DATA_TYPE_LENGTH: usize = 2;
-const B16_SIZE_LENGTH: usize = 2;
-const B16_RESERVED_LENGTH: usize = 0;
-// 32-bit Banks
-// Length in bytes of each field
-const B32_NAME_LENGTH: usize = 4;
-const B32_DATA_TYPE_LENGTH: usize = 4;
-const B32_SIZE_LENGTH: usize = 4;
-const B32_RESERVED_LENGTH: usize = 0;
-// 32-bit 64-bit aligned Banks
-// Length in bytes of each field
-const B32A_NAME_LENGTH: usize = 4;
-const B32A_DATA_TYPE_LENGTH: usize = 4;
-const B32A_SIZE_LENGTH: usize = 4;
-const B32A_RESERVED_LENGTH: usize = 4;
-
-// If the size of the data inside a bank is not a multiple of BANK_PADDING, the subsequent bytes up
-// until the next multiple of 8 are filled with random values.
-const BANK_PADDING: usize = 8;
 
 /// Read a MIDAS file without modifying its contents.
 pub mod read;
