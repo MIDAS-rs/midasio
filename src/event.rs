@@ -1,9 +1,9 @@
 use crate::data_bank::{bank_16_view, bank_32_view, bank_32a_view, BankView};
 use thiserror::Error;
-use winnow::binary::{u16, u32, Endianness};
-use winnow::combinator::{dispatch, fail, repeat};
-use winnow::error::{ContextError, ParseError, StrContext};
-use winnow::token::{take, take_while};
+use winnow::binary::{length_and_then, u16, u32, Endianness};
+use winnow::combinator::{dispatch, eof, fail, repeat_till0, success};
+use winnow::error::{ContextError, ParseError};
+use winnow::token::take;
 use winnow::Parser;
 
 /// The error type returned when conversion from
@@ -39,6 +39,7 @@ impl std::error::Error for InnerEventParseError {
     }
 }
 
+#[doc(hidden)]
 impl<I> From<ParseError<I, ContextError>> for TryEventViewFromBytesError {
     fn from(e: ParseError<I, ContextError>) -> Self {
         Self(InnerEventParseError {
@@ -50,8 +51,8 @@ impl<I> From<ParseError<I, ContextError>> for TryEventViewFromBytesError {
 
 /// An immutable view to a MIDAS event.
 ///
-/// An event is defined as a 24 bytes header followed by an arbitrary (non-zero)
-/// number of [`BankView`]s. The binary representation of a MIDAS event is:
+/// An event is defined as a 24 bytes header followed by an arbitrary number of
+/// [`BankView`]s. The binary representation of a MIDAS event is:
 ///
 /// <center>
 ///
@@ -67,6 +68,28 @@ impl<I> From<ParseError<I, ContextError>> for TryEventViewFromBytesError {
 /// |24|`n`|Data banks|
 ///
 /// </center>
+///
+/// # Examples
+///
+/// ```
+/// use midasio::event::EventView;
+///
+/// let header = [
+///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
+/// ];
+/// let bank = b"BANK\x01\x00\x01\x00\xFF";
+/// let padding = [0; 7];
+///
+/// let bytes = [&header[..], bank, &padding].concat();
+/// let event = EventView::try_from_le_bytes(&bytes)?;
+///
+/// assert_eq!(event.id(), 1);
+/// assert_eq!(event.trigger_mask(), 2);
+/// assert_eq!(event.serial_number(), 3);
+/// assert_eq!(event.timestamp(), 4);
+/// assert_eq!(event.into_iter().count(), 1);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug)]
 pub struct EventView<'a> {
     event_id: u16,
@@ -82,14 +105,8 @@ where
     B: Into<BankView<'a>>,
 {
     move |input: &mut &'a [u8]| {
-        let bank_view = f
-            .by_ref()
-            .context(StrContext::Label("bank view"))
-            .parse_next(input)?
-            .into();
-        let _ = take_while(bank_view.required_padding(), 0)
-            .context(StrContext::Label("bank padding"))
-            .parse_next(input)?;
+        let bank_view = f.parse_next(input)?.into();
+        let _ = take(bank_view.required_padding()).parse_next(input)?;
 
         Ok(bank_view)
     }
@@ -99,31 +116,25 @@ pub(crate) fn event_view<'a>(
     endian: Endianness,
 ) -> impl Parser<&'a [u8], EventView<'a>, ContextError> {
     move |input: &mut &'a [u8]| {
-        let (event_id, trigger_mask, serial_number, timestamp, bank_views) = (
-            u16(endian).context(StrContext::Label("event id")),
-            u16(endian).context(StrContext::Label("trigger mask")),
-            u32(endian).context(StrContext::Label("serial number")),
-            u32(endian).context(StrContext::Label("timestamp")),
-            // The MIDAS wiki:
-            // https://daq00.triumf.ca/MidasWiki/index.php/Event_Structure#Data_Area
-            // says that the data area contains at least 1 data bank.
+        let (event_id, trigger_mask, serial_number, timestamp, (bank_views, _)) = (
+            u16(endian),
+            u16(endian),
+            u32(endian),
+            u32(endian),
             u32(endian)
-                .context(StrContext::Label("event size"))
                 .verify(|&event_size| event_size >= 8)
                 .flat_map(|event_size| {
                     u32(endian)
                         .verify(move |&banks_size| banks_size == event_size - 8)
-                        .context(StrContext::Label("all banks size"))
                 })
                 .flat_map(|banks_size| {
-                    dispatch! {u32(endian).context(StrContext::Label("flags"));
-                        1 => take(banks_size).and_then(repeat(1.., padded_bank(bank_16_view(endian)))),
-                        17 => take(banks_size).and_then(repeat(1.., padded_bank(bank_32_view(endian)))),
-                        49 => take(banks_size).and_then(repeat(1.., padded_bank(bank_32a_view(endian)))),
-                        _ => fail.context(StrContext::Label("unknown flags")),
+                    dispatch! {u32(endian);
+                        1 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_16_view(endian)), eof)),
+                        17 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32_view(endian)), eof)),
+                        49 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32a_view(endian)), eof)),
+                        _ => fail,
                     }
                 })
-                .context(StrContext::Label("all banks slice"))
             )
                 .parse_next(input)?;
 
@@ -140,143 +151,27 @@ pub(crate) fn event_view<'a>(
 impl<'a> EventView<'a> {
     /// Create a native view to the underlying event from its representation as
     /// a byte slice in little endian.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use midasio::event::EventView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let header = [
-    ///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
-    /// ];
-    /// let bank = b"BANK\x01\x00\x01\x00\xFF";
-    /// let padding = [0; 7];
-    ///
-    /// let bytes = [&header[..], bank, &padding].concat();
-    /// let event = EventView::try_from_le_bytes(&bytes)?;
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn try_from_le_bytes(bytes: &'a [u8]) -> Result<Self, TryEventViewFromBytesError> {
         Ok(event_view(Endianness::Little).parse(bytes)?)
     }
     /// Create a native view to the underlying event from its representation as
     /// a byte slice in big endian.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use midasio::event::EventView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let header = [
-    ///    0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
-    /// ];
-    /// let bank = b"BANK\x00\x01\x00\x01\xFF";
-    /// let padding = [0; 7];
-    ///
-    /// let bytes = [&header[..], bank, &padding].concat();
-    /// let event = EventView::try_from_be_bytes(&bytes)?;
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn try_from_be_bytes(bytes: &'a [u8]) -> Result<Self, TryEventViewFromBytesError> {
         Ok(event_view(Endianness::Big).parse(bytes)?)
     }
     /// Return the ID of the event.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use midasio::event::EventView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let header = [
-    ///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
-    /// ];
-    /// let bank = b"BANK\x01\x00\x01\x00\xFF";
-    /// let padding = [0; 7];
-    ///
-    /// let bytes = [&header[..], bank, &padding].concat();
-    /// let event = EventView::try_from_le_bytes(&bytes)?;
-    ///
-    /// assert_eq!(event.id(), 1);
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn id(&self) -> u16 {
         self.event_id
     }
     /// Return the trigger mask of the event.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use midasio::event::EventView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let header = [
-    ///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
-    /// ];
-    /// let bank = b"BANK\x01\x00\x01\x00\xFF";
-    /// let padding = [0; 7];
-    ///
-    /// let bytes = [&header[..], bank, &padding].concat();
-    /// let event = EventView::try_from_le_bytes(&bytes)?;
-    ///
-    /// assert_eq!(event.trigger_mask(), 2);
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn trigger_mask(&self) -> u16 {
         self.trigger_mask
     }
     /// Return the serial number of the event.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use midasio::event::EventView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let header = [
-    ///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
-    /// ];
-    /// let bank = b"BANK\x01\x00\x01\x00\xFF";
-    /// let padding = [0; 7];
-    ///
-    /// let bytes = [&header[..], bank, &padding].concat();
-    /// let event = EventView::try_from_le_bytes(&bytes)?;
-    ///
-    /// assert_eq!(event.serial_number(), 3);
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn serial_number(&self) -> u32 {
         self.serial_number
     }
-    /// Return the timestamp of the event.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use midasio::event::EventView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let header = [
-    ///     1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
-    /// ];
-    /// let bank = b"BANK\x01\x00\x01\x00\xFF";
-    /// let padding = [0; 7];
-    ///
-    /// let bytes = [&header[..], bank, &padding].concat();
-    /// let event = EventView::try_from_le_bytes(&bytes)?;
-    ///
-    /// assert_eq!(event.timestamp(), 4);
-    /// # Ok(())
-    /// # }
-    /// ```
+    /// Return the unix timestamp of the event.
     pub fn timestamp(&self) -> u32 {
         self.timestamp
     }
