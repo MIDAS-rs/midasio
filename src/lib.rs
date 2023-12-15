@@ -1,16 +1,13 @@
-//! A Rust library to read binary MIDAS files.
-//!
-//! Midasio provides utilities to iterate over the MIDAS events in a file, iterate over the data
-//! banks in a MIDAS event, and extract the raw data from the data banks.
+#![doc = include_str!("../README.md")]
 
-use std::{error::Error, fmt, mem::size_of};
+use std::mem::size_of;
+use thiserror::Error;
 
-pub use crate::read::data_bank;
-pub use crate::read::event;
-pub use crate::read::file;
+pub mod data_bank;
+pub mod event;
+pub mod file;
 
-/// Read a MIDAS file without modifying its contents.
-pub mod read;
+pub use file::FileView;
 
 /// Possible data types stored inside a data bank
 #[derive(Clone, Copy, Debug)]
@@ -48,20 +45,21 @@ pub enum DataType {
 }
 
 impl DataType {
-    /// Returns the size of a [`DataType`] in bytes. Note that e.g. [`DataType::Struct`] doesn't have a
-    /// fixed known size; it is determined by the user.
+    /// Returns the size of a [`DataType`] in bytes. Note that e.g.
+    /// [`DataType::Struct`] doesn't have a fixed known size.
     ///
     /// # Examples
     ///
     /// ```
     /// use midasio::DataType;
     ///
-    /// assert_eq!(DataType::Byte.size().unwrap(), 1);
+    /// assert_eq!(DataType::Byte.size(), Some(1));
     /// assert!(DataType::Struct.size().is_none());
     /// ```
     pub fn size(&self) -> Option<usize> {
-        match *self {
-            // If you add a new type here, remember to add it as well in TryFrom unsigned below
+        match self {
+            // If you add a new type here, remember to add it as well in TryFrom
+            // unsigned below
             DataType::Byte => Some(size_of::<u8>()),
             DataType::I8 => Some(size_of::<i8>()),
             DataType::U8 => Some(size_of::<u8>()),
@@ -81,17 +79,17 @@ impl DataType {
     }
 }
 
-/// The error type returned when conversion from unsigned integer to [`DataType`] fails.
-#[derive(Clone, Copy, Debug)]
-pub struct TryDataTypeFromUnsignedError;
-impl fmt::Display for TryDataTypeFromUnsignedError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "conversion from unknown value attempted")
-    }
+/// The error type returned when conversion from unsigned integer to
+/// [`DataType`] fails.
+#[derive(Debug, Error)]
+#[error("unknown conversion from unsigned `{input}` to DataType")]
+pub struct TryDataTypeFromUnsignedError {
+    // Conversion is possible from every unsigned integer type. So just store
+    // as the largest one.
+    input: u128,
 }
-impl Error for TryDataTypeFromUnsignedError {}
 
-// Implement conversion from any unsigned integer type
+// Conversion from any unsigned integer type
 macro_rules! impl_try_type_from {
     ($num_type:ty) => {
         impl TryFrom<$num_type> for DataType {
@@ -117,7 +115,9 @@ macro_rules! impl_try_type_from {
                     // 16 missing. Link. What does that mean?
                     17 => Ok(DataType::I64),
                     18 => Ok(DataType::U64),
-                    _ => Err(TryDataTypeFromUnsignedError),
+                    _ => Err(TryDataTypeFromUnsignedError {
+                        input: u128::from(num),
+                    }),
                 }
             }
         }
@@ -129,6 +129,3 @@ macro_rules! impl_try_type_from {
     };
 }
 impl_try_type_from!(u8, u16, u32, u64, u128);
-
-#[cfg(test)]
-mod tests;

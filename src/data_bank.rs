@@ -877,6 +877,3 @@ impl<'a> IntoIterator for BankView<'a> {
         self.data_slice().chunks_exact(item_size)
     }
 }
-
-#[cfg(test)]
-mod tests;

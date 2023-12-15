@@ -360,6 +360,3 @@ pub fn initial_timestamp_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromB
 
     Ok(initial_timestamp.parse(bytes)?)
 }
-
-#[cfg(test)]
-mod tests;

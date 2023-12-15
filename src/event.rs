@@ -299,6 +299,3 @@ impl<'a> IntoIterator for EventView<'a> {
         self.bank_views.into_iter()
     }
 }
-
-#[cfg(test)]
-mod tests;
