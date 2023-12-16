@@ -1,15 +1,10 @@
 use crate::event::{event_view, EventView};
 use thiserror::Error;
-use winnow::binary::{length_take, u16, u32, Endianness};
+use winnow::binary::{le_u16, length_take, u16, u32, Endianness};
 use winnow::combinator::{delimited, dispatch, fail, preceded, repeat, success};
 use winnow::error::{ContextError, PResult, ParseError, StrContext};
 use winnow::token::{take, take_while};
 use winnow::Parser;
-
-const BOR_ID: u16 = 0x8000;
-const BOR_ID_SWAPPED: u16 = BOR_ID.swap_bytes();
-const EOR_ID: u16 = 0x8001;
-const MAGIC: u16 = 0x494d;
 
 /// The error type returned when conversion from
 /// [`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.html) to a
@@ -44,6 +39,7 @@ impl std::error::Error for InnerFileParseError {
     }
 }
 
+#[doc(hidden)]
 impl<I> From<ParseError<I, ContextError>> for TryFileViewFromBytesError {
     fn from(e: ParseError<I, ContextError>) -> Self {
         Self(InnerFileParseError {
@@ -64,14 +60,14 @@ impl<I> From<ParseError<I, ContextError>> for TryFileViewFromBytesError {
 /// |Byte Offset|Size (in bytes)|Description|
 /// |:-:|:-:|:-:|
 /// |0|2|Begin-of-run marker (`0x8000`)|
-/// |2|2|Magic-midas marker (`0x494d`)|
+/// |2|2|Magic-midas marker (`0x494D`)|
 /// |4|4|Run number|
 /// |8|4|Initial unix timestamp|
 /// |12|4|Initial ODB dump size (`n`)|
 /// |16|`n`|Initial ODB dump|
 /// |16 + `n`|`m`|Events|
 /// |16 + `n` + `m`|2|End-of-run marker (`0x8001`)|
-/// |18 + `n` + `m`|2|Magic-midas marker (`0x494d`)|
+/// |18 + `n` + `m`|2|Magic-midas marker (`0x494D`)|
 /// |20 + `n` + `m`|4|Run number|
 /// |24 + `n` + `m`|4|Final unix timestamp|
 /// |28 + `n` + `m`|4|Final ODB dump size (`k`)|
@@ -87,8 +83,13 @@ pub struct FileView<'a> {
     final_odb: &'a [u8],
 }
 
+const BOR_ID: u16 = 0x8000;
+const BOR_ID_SWAPPED: u16 = BOR_ID.swap_bytes();
+const EOR_ID: u16 = 0x8001;
+const MAGIC: u16 = 0x494D;
+
 fn endian(input: &mut &[u8]) -> PResult<Endianness> {
-    dispatch! {u16(Endianness::Little);
+    dispatch! {le_u16;
         BOR_ID => success(Endianness::Little),
         BOR_ID_SWAPPED => success(Endianness::Big),
         _ => fail,
@@ -104,36 +105,36 @@ fn file_view<'a>(input: &mut &'a [u8]) -> PResult<FileView<'a>> {
     let (initial_timestamp, initial_odb, event_views, run_number, final_timestamp, final_odb) =
         preceded(
             u16(endianness)
-                .verify(|&marker| marker == MAGIC)
-                .context(StrContext::Label("initial odb dump magic midas marker")),
+                .verify(|&magic| magic == MAGIC)
+                .context(StrContext::Label("initial magic midas marker")),
             u32(endianness)
-                .context(StrContext::Label("initial odb dump run number"))
+                .context(StrContext::Label("initial run number"))
                 .flat_map(|run_number| {
                     (
                         u32(endianness).context(StrContext::Label("initial unix timestamp")),
                         length_take(
                             u32(endianness).context(StrContext::Label("initial odb dump size")),
                         )
-                        .context(StrContext::Label("initial odb slice")),
+                        .context(StrContext::Label("initial odb dump slice")),
                         repeat(0.., event_view(endianness)),
                         preceded(
                             (
                                 u16(endianness)
-                                    .verify(|&marker| marker == EOR_ID)
+                                    .verify(|&eor_id| eor_id == EOR_ID)
                                     .context(StrContext::Label("end-of-run ID")),
-                                u16(endianness).verify(|&marker| marker == MAGIC).context(
-                                    StrContext::Label("final odb dump magic midas marker"),
-                                ),
+                                u16(endianness)
+                                    .verify(|&magic| magic == MAGIC)
+                                    .context(StrContext::Label("final magic midas marker")),
                             ),
                             u32(endianness)
                                 .verify(move |&n| n == run_number)
-                                .context(StrContext::Label("final odb dump run number")),
+                                .context(StrContext::Label("final run number")),
                         ),
                         u32(endianness).context(StrContext::Label("final unix timestamp")),
                         length_take(
                             u32(endianness).context(StrContext::Label("final odb dump size")),
                         )
-                        .context(StrContext::Label("final odb slice")),
+                        .context(StrContext::Label("final odb dump slice")),
                     )
                 }),
         )
@@ -160,110 +161,28 @@ impl<'a> TryFrom<&'a [u8]> for FileView<'a> {
 impl<'a> FileView<'a> {
     /// Create a native view to the underlying file from its representation as a
     /// byte slice. Endianness is determined from the begin-of-run marker.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use midasio::file::FileView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let bytes = std::fs::read("example.mid")?;
-    /// let file = FileView::try_from_bytes(&bytes)?;
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn try_from_bytes(bytes: &'a [u8]) -> Result<Self, TryFileViewFromBytesError> {
         Self::try_from(bytes)
     }
     /// Return the run number associated with the file.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use midasio::file::FileView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let bytes = std::fs::read("example.mid")?;
-    /// let file = FileView::try_from_bytes(&bytes)?;
-    ///
-    /// let run_number = file.run_number();
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn run_number(&self) -> u32 {
         self.run_number
     }
-    /// Return the timestamp of the initial ODB dump.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use midasio::file::FileView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let bytes = std::fs::read("example.mid")?;
-    /// let file = FileView::try_from_bytes(&bytes)?;
-    ///
-    /// let timestamp = file.initial_timestamp();
-    /// # Ok(())
-    /// # }
-    /// ```
+    /// Return the unix timestamp of the initial ODB dump.
     pub fn initial_timestamp(&self) -> u32 {
         self.initial_timestamp
     }
     /// Return the initial ODB dump. This is not guaranteed to be valid ASCII
     /// nor UTF-8.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use midasio::file::FileView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let bytes = std::fs::read("example.mid")?;
-    /// let file = FileView::try_from_bytes(&bytes)?;
-    ///
-    /// let odb = file.initial_odb();
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn initial_odb(&self) -> &'a [u8] {
         self.initial_odb
     }
-    /// Return the timestamp of the final ODB dump.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use midasio::file::FileView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let bytes = std::fs::read("example.mid")?;
-    /// let file = FileView::try_from_bytes(&bytes)?;
-    ///
-    /// let timestamp = file.final_timestamp();
-    /// # Ok(())
-    /// # }
-    /// ```
+    /// Return the unix timestamp of the final ODB dump.
     pub fn final_timestamp(&self) -> u32 {
         self.final_timestamp
     }
     /// Return the final ODB dump. This is not guaranteed to be valid ASCII
     /// nor UTF-8.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use midasio::file::FileView;
-    ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let bytes = std::fs::read("example.mid")?;
-    /// let file = FileView::try_from_bytes(&bytes)?;
-    ///
-    /// let odb = file.final_odb();
-    /// # Ok(())
-    /// # }
-    /// ```
     pub fn final_odb(&self) -> &'a [u8] {
         self.final_odb
     }
@@ -300,9 +219,9 @@ impl<'a> IntoIterator for FileView<'a> {
 /// use midasio::file::run_number_unchecked;
 ///
 /// // Note that the following is an invalid MIDAS file:
-/// // - The magic-midas marker is 0xffff instead of 0x494d.
+/// // - The magic midas marker is 0xFFFF instead of 0x494D.
 /// // - Too short to even contain the rest of the header.
-/// let bytes = b"\x00\x80\xff\xff\x01\x00\x00\x00";
+/// let bytes = b"\x00\x80\xFF\xFF\x01\x00\x00\x00";
 /// // Nonetheless, a "run number" can still be extracted with this function.
 /// let run_number = run_number_unchecked(bytes)?;
 /// assert_eq!(run_number, 1);
@@ -324,8 +243,8 @@ pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromBytesErr
     Ok(run_number.parse(bytes)?)
 }
 
-/// Return the timestamp of the initial ODB dump assuming that the input slice
-/// has the correct MIDAS file format.
+/// Return the unix timestamp of the initial ODB dump assuming that the input
+/// slice has the correct MIDAS file format.
 ///
 /// This is useful for checking the initial timestamp of a file without having
 /// to parse its entire contents. Returns an error if the timestamp cannot be
@@ -337,9 +256,9 @@ pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromBytesErr
 /// use midasio::file::initial_timestamp_unchecked;
 ///
 /// // Note that the following is an invalid MIDAS file:
-/// // - The magic-midas marker is 0xffff instead of 0x494d.
+/// // - The magic midas marker is 0xFFFF instead of 0x494D.
 /// // - Too short to even contain the rest of the header.
-/// let bytes = b"\x00\x80\xff\xff\xff\xff\xff\xff\x01\x00\x00\x00";
+/// let bytes = b"\x00\x80\xFF\xFF\xFF\xFF\xFF\xFF\x01\x00\x00\x00";
 /// // Nonetheless, an "initial timestamp" can still be extracted with this function.
 /// let timestamp = initial_timestamp_unchecked(bytes)?;
 /// assert_eq!(timestamp, 1);
