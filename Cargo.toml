@@ -1,11 +1,11 @@
 [package]
 name = "midasio"
-version = "0.4.1" # Remember to also change this in the README.md
+version = "0.4.1"
 edition = "2021"
 license = "MIT"
 description = "Utilities to read binary files in the MIDAS format"
 readme = "README.md"
-repository = "https://github.com/DJDuque/midasio"
+repository = "https://github.com/MIDAS-rs/midasio"
 keywords = ["midas", "daq", "data-acquisition", "physics"]
 categories = ["parser-implementations", "science"]
 documentation = "https://docs.rs/midasio"
