@@ -6,6 +6,9 @@ use winnow::error::{ContextError, PResult, ParseError, StrContext};
 use winnow::token::{take, take_while};
 use winnow::Parser;
 
+#[cfg(feature = "rayon")]
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator};
+
 /// The error type returned when conversion from
 /// [`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.html) to a
 /// [`FileView`] fails.
@@ -203,6 +206,26 @@ impl<'a> IntoIterator for FileView<'a> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.event_views.into_iter()
+    }
+}
+
+#[cfg(feature = "rayon")]
+impl<'a> IntoParallelIterator for FileView<'a> {
+    type Item = EventView<'a>;
+    type Iter = rayon::vec::IntoIter<EventView<'a>>;
+
+    fn into_par_iter(self) -> Self::Iter {
+        self.event_views.into_par_iter()
+    }
+}
+
+#[cfg(feature = "rayon")]
+impl<'a, 'b> IntoParallelIterator for &'b FileView<'a> {
+    type Item = &'b EventView<'a>;
+    type Iter = rayon::slice::Iter<'b, EventView<'a>>;
+
+    fn into_par_iter(self) -> Self::Iter {
+        self.event_views.par_iter()
     }
 }
 
