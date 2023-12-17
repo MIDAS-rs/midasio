@@ -20,7 +20,7 @@ jobs:
       run: cargo install clippy-sarif sarif-fmt
     - name: Run clippy
       run: >
-        cargo clippy --all-targets --message-format=json -- -D warnings
+        cargo clippy --all-features --all-targets --message-format=json -- -D warnings
         | clippy-sarif
         | tee clippy-results.sarif
         | sarif-fmt
@@ -41,4 +41,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Check documentation
-      run: RUSTDOCFLAGS="-D warnings" cargo doc
+      run: RUSTDOCFLAGS="-D warnings" cargo doc --all-features
