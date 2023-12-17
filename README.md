@@ -31,3 +31,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+## Feature flags
+
+
+- `rayon`: Implement [`rayon`](https://crates.io/crates/rayon)'s 
+`IntoParallelIterator` for `FileView`. This feature makes parallel analysis of
+MIDAS events very easy with the `FileView::par_iter` and
+`FileView::into_par_iter` methods.
