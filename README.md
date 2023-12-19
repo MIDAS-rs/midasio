@@ -15,11 +15,9 @@ MIDAS file is from a [`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.htm
 slice. Parsing and iterating over the contents of a file is as simple as:
 
 ```rust no_run
-use midasio::FileView;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let contents = std::fs::read("example.mid")?;
-    let file_view = FileView::try_from(&contents[..])?;
+    let file_view = midasio::FileView::try_from(&contents[..])?;
 
     for event_view in file_view {
         // Do something with each event in the file.
