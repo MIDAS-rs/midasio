@@ -1,7 +1,7 @@
 use crate::event::{event_view, EventView};
 use thiserror::Error;
 use winnow::binary::{le_u16, length_take, u16, u32, Endianness};
-use winnow::combinator::{delimited, dispatch, fail, preceded, repeat, success};
+use winnow::combinator::{delimited, dispatch, fail, repeat, seq, success};
 use winnow::error::{ContextError, PResult, ParseError, StrContext};
 use winnow::token::{take, take_while};
 use winnow::Parser;
@@ -102,55 +102,31 @@ fn endian(input: &mut &[u8]) -> PResult<Endianness> {
 
 fn file_view<'a>(input: &mut &'a [u8]) -> PResult<FileView<'a>> {
     let endianness = endian
-        .context(StrContext::Label("begin-of-run ID"))
+        .context(StrContext::Label("begin-of-run id"))
         .parse_next(input)?;
 
-    let (initial_timestamp, initial_odb, event_views, run_number, final_timestamp, final_odb) =
-        preceded(
-            u16(endianness)
-                .verify(|&magic| magic == MAGIC)
-                .context(StrContext::Label("initial magic midas marker")),
-            u32(endianness)
-                .context(StrContext::Label("initial run number"))
-                .flat_map(|run_number| {
-                    (
-                        u32(endianness).context(StrContext::Label("initial unix timestamp")),
-                        length_take(
-                            u32(endianness).context(StrContext::Label("initial odb dump size")),
-                        )
-                        .context(StrContext::Label("initial odb dump slice")),
-                        repeat(0.., event_view(endianness)),
-                        preceded(
-                            (
-                                u16(endianness)
-                                    .verify(|&eor_id| eor_id == EOR_ID)
-                                    .context(StrContext::Label("end-of-run ID")),
-                                u16(endianness)
-                                    .verify(|&magic| magic == MAGIC)
-                                    .context(StrContext::Label("final magic midas marker")),
-                            ),
-                            u32(endianness)
-                                .verify(move |&n| n == run_number)
-                                .context(StrContext::Label("final run number")),
-                        ),
-                        u32(endianness).context(StrContext::Label("final unix timestamp")),
-                        length_take(
-                            u32(endianness).context(StrContext::Label("final odb dump size")),
-                        )
-                        .context(StrContext::Label("final odb dump slice")),
-                    )
-                }),
-        )
-        .parse_next(input)?;
-
-    Ok(FileView {
-        run_number,
-        initial_timestamp,
-        initial_odb,
-        event_views,
-        final_timestamp,
-        final_odb,
-    })
+    seq! {FileView{
+        _: u16(endianness).verify(|&magic| magic == MAGIC)
+            .context(StrContext::Label("initial magic midas marker")),
+        run_number: u32(endianness)
+            .context(StrContext::Label("initial run number")),
+        initial_timestamp: u32(endianness)
+            .context(StrContext::Label("initial unix timestamp")),
+        initial_odb: length_take(u32(endianness))
+            .context(StrContext::Label("initial odb dump")),
+        event_views: repeat(0.., event_view(endianness)),
+        _: u16(endianness).verify(|&eor_id| eor_id == EOR_ID)
+            .context(StrContext::Label("end-of-run id")),
+        _: u16(endianness).verify(|&magic| magic == MAGIC)
+            .context(StrContext::Label("final magic midas marker")),
+        _: u32(endianness).verify(move |&n| n == run_number)
+            .context(StrContext::Label("final run number")),
+        final_timestamp: u32(endianness)
+            .context(StrContext::Label("final unix timestamp")),
+        final_odb: length_take(u32(endianness))
+            .context(StrContext::Label("final odb dump")),
+    }}
+    .parse_next(input)
 }
 
 impl<'a> TryFrom<&'a [u8]> for FileView<'a> {
@@ -253,7 +229,7 @@ impl<'a, 'b> IntoParallelIterator for &'b FileView<'a> {
 pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromBytesError> {
     fn run_number(input: &mut &[u8]) -> PResult<u32> {
         let endianness = endian
-            .context(StrContext::Label("begin-of-run ID"))
+            .context(StrContext::Label("begin-of-run id"))
             .parse_next(input)?;
         delimited(
             take(2usize).context(StrContext::Label("magic midas marker")),
@@ -290,7 +266,7 @@ pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromBytesErr
 pub fn initial_timestamp_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromBytesError> {
     fn initial_timestamp(input: &mut &[u8]) -> PResult<u32> {
         let endianness = endian
-            .context(StrContext::Label("begin-of-run ID"))
+            .context(StrContext::Label("begin-of-run id"))
             .parse_next(input)?;
         delimited(
             take(6usize).context(StrContext::Label("magic midas marker or run number")),

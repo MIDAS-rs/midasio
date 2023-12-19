@@ -1,7 +1,7 @@
 use crate::data_bank::{bank_16_view, bank_32_view, bank_32a_view, BankView};
 use thiserror::Error;
 use winnow::binary::{length_and_then, u16, u32, Endianness};
-use winnow::combinator::{dispatch, eof, fail, repeat_till0, success};
+use winnow::combinator::{dispatch, eof, fail, repeat_till0, seq, success};
 use winnow::error::{ContextError, ParseError};
 use winnow::token::take;
 use winnow::Parser;
@@ -115,37 +115,27 @@ where
 pub(crate) fn event_view<'a>(
     endian: Endianness,
 ) -> impl Parser<&'a [u8], EventView<'a>, ContextError> {
-    move |input: &mut &'a [u8]| {
-        let (event_id, trigger_mask, serial_number, timestamp, (bank_views, _)) = (
-            u16(endian),
-            u16(endian),
-            u32(endian),
-            u32(endian),
-            u32(endian)
-                .verify(|&event_size| event_size >= 8)
-                .flat_map(|event_size| {
-                    u32(endian)
-                        .verify(move |&banks_size| banks_size == event_size - 8)
-                })
-                .flat_map(|banks_size| {
-                    dispatch! {u32(endian);
-                        1 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_16_view(endian)), eof)),
-                        17 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32_view(endian)), eof)),
-                        49 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32a_view(endian)), eof)),
-                        _ => fail,
-                    }
-                })
-            )
-                .parse_next(input)?;
-
-        Ok(EventView {
-            event_id,
-            trigger_mask,
-            serial_number,
-            timestamp,
-            bank_views,
-        })
-    }
+    seq! {EventView {
+        event_id: u16(endian),
+        trigger_mask: u16(endian),
+        serial_number: u32(endian),
+        timestamp: u32(endian),
+        bank_views: u32(endian)
+            .verify(|&event_size| event_size >= 8)
+            .flat_map(|event_size| {
+                u32(endian)
+                    .verify(move |&banks_size| banks_size == event_size - 8)
+            })
+            .flat_map(|banks_size| {
+                dispatch! {u32(endian);
+                    1 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_16_view(endian)), eof)),
+                    17 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32_view(endian)), eof)),
+                    49 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32a_view(endian)), eof)),
+                    _ => fail,
+                }
+            })
+            .map(|(bank_views, _)| bank_views),
+    }}
 }
 
 impl<'a> EventView<'a> {

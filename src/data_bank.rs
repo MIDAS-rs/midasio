@@ -2,7 +2,7 @@ use std::mem::size_of;
 use std::slice::ChunksExact;
 use thiserror::Error;
 use winnow::binary::{length_take, u16, u32, Endianness};
-use winnow::combinator::terminated;
+use winnow::combinator::{seq, terminated};
 use winnow::error::{ContextError, ParseError};
 use winnow::stream::AsChar;
 use winnow::token::{take, take_while};
@@ -211,24 +211,14 @@ pub struct Bank16View<'a> {
 pub(crate) fn bank_16_view<'a>(
     endian: Endianness,
 ) -> impl Parser<&'a [u8], Bank16View<'a>, ContextError> {
-    move |input: &mut &'a [u8]| {
-        let (name, data_type) = (
-            take_while(4, AsChar::is_alphanum)
-                // SAFETY: All 4 bytes are ASCII alphanumeric.
-                .map(|b: &[u8]| unsafe { std::str::from_utf8_unchecked(b) }),
-            u16(endian).try_map(DataType::try_from),
-        )
-            .parse_next(input)?;
-        let data_slice = length_take(u16(endian))
-            .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0)
-            .parse_next(input)?;
-
-        Ok(Bank16View {
-            name,
-            data_type,
-            data_slice,
-        })
-    }
+    seq! {Bank16View {
+        name: take_while(4, AsChar::is_alphanum)
+            // SAFETY: All 4 bytes are ASCII alphanumeric.
+            .map(|b: &[u8]| unsafe { std::str::from_utf8_unchecked(b) }),
+        data_type: u16(endian).try_map(DataType::try_from),
+        data_slice: length_take(u16(endian))
+            .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0),
+    }}
 }
 
 impl<'a> Bank16View<'a> {
@@ -298,24 +288,14 @@ pub struct Bank32View<'a> {
 pub(crate) fn bank_32_view<'a>(
     endian: Endianness,
 ) -> impl Parser<&'a [u8], Bank32View<'a>, ContextError> {
-    move |input: &mut &'a [u8]| {
-        let (name, data_type) = (
-            take_while(4, AsChar::is_alphanum)
-                // SAFETY: All 4 bytes are ASCII alphanumeric.
-                .map(|b: &[u8]| unsafe { std::str::from_utf8_unchecked(b) }),
-            u32(endian).try_map(DataType::try_from),
-        )
-            .parse_next(input)?;
-        let data_slice = length_take(u32(endian))
-            .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0)
-            .parse_next(input)?;
-
-        Ok(Bank32View {
-            name,
-            data_type,
-            data_slice,
-        })
-    }
+    seq! {Bank32View {
+        name: take_while(4, AsChar::is_alphanum)
+            // SAFETY: All 4 bytes are ASCII alphanumeric.
+            .map(|b: &[u8]| unsafe { std::str::from_utf8_unchecked(b) }),
+        data_type: u32(endian).try_map(DataType::try_from),
+        data_slice: length_take(u32(endian))
+            .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0),
+    }}
 }
 
 impl<'a> Bank32View<'a> {
@@ -386,24 +366,14 @@ pub struct Bank32AView<'a> {
 pub(crate) fn bank_32a_view<'a>(
     endian: Endianness,
 ) -> impl Parser<&'a [u8], Bank32AView<'a>, ContextError> {
-    move |input: &mut &'a [u8]| {
-        let (name, data_type) = (
-            take_while(4, AsChar::is_alphanum)
-                // SAFETY: All 4 bytes are ASCII alphanumeric.
-                .map(|b: &[u8]| unsafe { std::str::from_utf8_unchecked(b) }),
-            u32(endian).try_map(DataType::try_from),
-        )
-            .parse_next(input)?;
-        let data_slice = length_take(terminated(u32(endian), take(4usize)))
-            .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0)
-            .parse_next(input)?;
-
-        Ok(Bank32AView {
-            name,
-            data_type,
-            data_slice,
-        })
-    }
+    seq! {Bank32AView {
+        name: take_while(4, AsChar::is_alphanum)
+            // SAFETY: All 4 bytes are ASCII alphanumeric.
+            .map(|b: &[u8]| unsafe { std::str::from_utf8_unchecked(b) }),
+        data_type: u32(endian).try_map(DataType::try_from),
+        data_slice: length_take(terminated(u32(endian), take(4usize)))
+            .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0),
+    }}
 }
 
 impl<'a> Bank32AView<'a> {
