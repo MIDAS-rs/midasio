@@ -9,14 +9,12 @@ use winnow::token::{take, take_while};
 use winnow::Parser;
 
 /// Possible data types stored inside a data bank
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DataType {
     /// Unsigned byte.
-    Byte,
+    U8,
     /// Signed byte.
     I8,
-    /// Unsigned byte.
-    U8,
     /// Unsigned 16-bits integer.
     U16,
     /// Signed 16-bits integer.
@@ -52,16 +50,15 @@ impl DataType {
     /// ```
     /// use midasio::data_bank::DataType;
     ///
-    /// assert_eq!(DataType::Byte.size(), Some(1));
+    /// assert_eq!(DataType::U8.size(), Some(1));
     /// assert!(DataType::Struct.size().is_none());
     /// ```
     pub fn size(&self) -> Option<usize> {
         match self {
             // If you add a new type here, remember to add it as well in TryFrom
             // unsigned below
-            DataType::Byte => Some(size_of::<u8>()),
-            DataType::I8 => Some(size_of::<i8>()),
             DataType::U8 => Some(size_of::<u8>()),
+            DataType::I8 => Some(size_of::<i8>()),
             DataType::U16 => Some(size_of::<u16>()),
             DataType::I16 => Some(size_of::<i16>()),
             DataType::U32 => Some(size_of::<u32>()),
@@ -96,7 +93,7 @@ macro_rules! impl_try_type_from {
 
             fn try_from(num: $num_type) -> Result<Self, Self::Error> {
                 match num {
-                    1 => Ok(DataType::Byte),
+                    1 => Ok(DataType::U8),
                     2 => Ok(DataType::I8),
                     3 => Ok(DataType::U8),
                     4 => Ok(DataType::U16),
@@ -197,7 +194,7 @@ impl<I> From<ParseError<I, ContextError>> for TryBankViewFromBytesError {
 /// let bank = Bank16View::try_from_le_bytes(bytes)?;
 ///
 /// assert_eq!(bank.name(), "BANK");
-/// assert!(matches!(bank.data_type(), DataType::Byte));
+/// assert_eq!(bank.data_type(), DataType::U8);
 /// assert_eq!(bank.data_slice(), &[0xFF, 0xFF, 0xFF]);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
@@ -274,7 +271,7 @@ impl<'a> Bank16View<'a> {
 /// let bank = Bank32View::try_from_le_bytes(bytes)?;
 ///
 /// assert_eq!(bank.name(), "BANK");
-/// assert!(matches!(bank.data_type(), DataType::Byte));
+/// assert_eq!(bank.data_type(), DataType::U8);
 /// assert_eq!(bank.data_slice(), &[0xFF, 0xFF, 0xFF]);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
@@ -352,7 +349,7 @@ impl<'a> Bank32View<'a> {
 /// let bank = Bank32AView::try_from_le_bytes(bytes)?;
 ///
 /// assert_eq!(bank.name(), "BANK");
-/// assert!(matches!(bank.data_type(), DataType::Byte));
+/// assert_eq!(bank.data_type(), DataType::U8);
 /// assert_eq!(bank.data_slice(), &[0xFF, 0xFF, 0xFF]);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
@@ -504,5 +501,69 @@ impl<'a> IntoIterator for BankView<'a> {
         //iterate over individual bytes.
         let item_size = self.data_type().size().unwrap_or(1);
         self.data_slice().chunks_exact(item_size)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! data_type_tests_for {
+        ($num_type:ty) => {
+            paste::paste! {
+                #[test]
+                fn [<data_type_try_from_ $num_type>]() -> Result<(), Box<dyn std::error::Error>> {
+                    assert_eq!(DataType::try_from([<1 $num_type>])?, DataType::U8);
+                    assert_eq!(DataType::try_from([<2 $num_type>])?, DataType::I8);
+                    assert_eq!(DataType::try_from([<3 $num_type>])?, DataType::U8);
+                    assert_eq!(DataType::try_from([<4 $num_type>])?, DataType::U16);
+                    assert_eq!(DataType::try_from([<5 $num_type>])?, DataType::I16);
+                    assert_eq!(DataType::try_from([<6 $num_type>])?, DataType::U32);
+                    assert_eq!(DataType::try_from([<7 $num_type>])?, DataType::I32);
+                    assert_eq!(DataType::try_from([<8 $num_type>])?, DataType::Bool);
+                    assert_eq!(DataType::try_from([<9 $num_type>])?, DataType::F32);
+                    assert_eq!(DataType::try_from([<10 $num_type>])?, DataType::F64);
+                    assert_eq!(DataType::try_from([<11 $num_type>])?, DataType::Bit32);
+                    assert_eq!(DataType::try_from([<12 $num_type>])?, DataType::Str);
+                    // TID_ARRAY. Not supported yet.
+                    assert!(DataType::try_from([<13 $num_type>]).is_err());
+                    assert_eq!(DataType::try_from([<14 $num_type>])?, DataType::Struct);
+                    // TID_KEY. Not supported yet.
+                    assert!(DataType::try_from([<15 $num_type>]).is_err());
+                    // TID_LINK. Not supported yet.
+                    assert!(DataType::try_from([<16 $num_type>]).is_err());
+                    assert_eq!(DataType::try_from([<17 $num_type>])?, DataType::I64);
+                    assert_eq!(DataType::try_from([<18 $num_type>])?, DataType::U64);
+                    for i in [<19 $num_type>]..=255 {
+                        assert!(DataType::try_from(i).is_err());
+                    }
+                    Ok(())
+                }
+            }
+        };
+
+        ($first:ty, $($rest:ty),+ $(,)?) => {
+            data_type_tests_for!($first);
+            data_type_tests_for!($($rest),+);
+        };
+    }
+    data_type_tests_for!(u8, u16, u32, u64, u128);
+
+    #[test]
+    fn data_type_size() {
+        assert_eq!(DataType::U8.size(), Some(1));
+        assert_eq!(DataType::I8.size(), Some(1));
+        assert_eq!(DataType::U16.size(), Some(2));
+        assert_eq!(DataType::I16.size(), Some(2));
+        assert_eq!(DataType::U32.size(), Some(4));
+        assert_eq!(DataType::I32.size(), Some(4));
+        assert_eq!(DataType::Bool.size(), Some(4));
+        assert_eq!(DataType::F32.size(), Some(4));
+        assert_eq!(DataType::F64.size(), Some(8));
+        assert_eq!(DataType::Bit32.size(), Some(4));
+        assert_eq!(DataType::Str.size(), None);
+        assert_eq!(DataType::Struct.size(), None);
+        assert_eq!(DataType::I64.size(), Some(8));
+        assert_eq!(DataType::U64.size(), Some(8));
     }
 }
