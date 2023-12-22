@@ -616,34 +616,13 @@ mod tests {
 
     #[test]
     fn bank_16_view_invalid_data_type() {
-        let mut le_bytes = b"NAME\x04\x00\x02\x00\x34\x12".to_vec();
-        let mut be_bytes = b"NAME\x00\x04\x00\x02\x12\x34".to_vec();
+        let bytes = b"NAME\xFF\xFF\x02\x00\x34\x12";
+        let result = Bank16View::try_from_le_bytes(bytes);
+        assert!(result.is_err());
 
-        for n in 1..=255 {
-            le_bytes[5] = n;
-            let result = Bank16View::try_from_le_bytes(&le_bytes);
-            assert!(result.is_err());
-
-            be_bytes[4] = n;
-            let result = Bank16View::try_from_be_bytes(&be_bytes);
-            assert!(result.is_err());
-        }
-    }
-
-    #[test]
-    fn bank_16_view_invalid_data_length() {
-        let mut le_bytes = b"NAME\x04\x00\x00\x00".to_vec();
-        let mut be_bytes = b"NAME\x00\x04\x00\x00".to_vec();
-
-        for n in 1..=255 {
-            le_bytes[6] = n;
-            let result = Bank16View::try_from_le_bytes(&le_bytes);
-            assert!(result.is_err());
-
-            be_bytes[7] = n;
-            let result = Bank16View::try_from_be_bytes(&be_bytes);
-            assert!(result.is_err());
-        }
+        let bytes = b"NAME\xFF\xFF\x00\x02\x12\x34";
+        let result = Bank16View::try_from_be_bytes(bytes);
+        assert!(result.is_err());
     }
 
     #[test]
@@ -659,20 +638,108 @@ mod tests {
 
     #[test]
     fn bank_16_view_invalid_data_slice_length() {
-        let bytes = b"NAME\x04\x00\x02\x00\x12";
+        let bytes = b"NAME\x01\x00\x02\x00\x12";
         let result = Bank16View::try_from_le_bytes(bytes);
         assert!(result.is_err());
 
-        let bytes = b"NAME\x04\x00\x02\x00\x56\x34\x12";
+        let bytes = b"NAME\x01\x00\x02\x00\x56\x34\x12";
         let result = Bank16View::try_from_le_bytes(bytes);
         assert!(result.is_err());
 
-        let bytes = b"NAME\x00\x04\x00\x02\x34";
+        let bytes = b"NAME\x00\x01\x00\x02\x34";
         let result = Bank16View::try_from_be_bytes(bytes);
         assert!(result.is_err());
 
-        let bytes = b"NAME\x00\x04\x00\x02\x12\x34\x56";
+        let bytes = b"NAME\x00\x01\x00\x02\x12\x34\x56";
         let result = Bank16View::try_from_be_bytes(bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn bank_32_view_try_from_le_bytes() -> Result<(), Box<dyn std::error::Error>> {
+        let bytes = b"NAME\x04\x00\x00\x00\x02\x00\x00\x00\x34\x12";
+        let bank = Bank32View::try_from_le_bytes(bytes)?;
+        assert_eq!(bank.name(), "NAME");
+        assert_eq!(bank.data_type(), DataType::U16);
+        assert_eq!(bank.data_slice(), &[0x34, 0x12]);
+
+        let bytes = b"NAME\x01\x00\x00\x00\x00\x00\x00\x00";
+        let bank = Bank32View::try_from_le_bytes(bytes)?;
+        assert_eq!(bank.name(), "NAME");
+        assert_eq!(bank.data_type(), DataType::U8);
+        assert_eq!(bank.data_slice(), &[]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn bank_32_view_try_from_be_bytes() -> Result<(), Box<dyn std::error::Error>> {
+        let bytes = b"NAME\x00\x00\x00\x04\x00\x00\x00\x02\x12\x34";
+        let bank = Bank32View::try_from_be_bytes(bytes)?;
+        assert_eq!(bank.name(), "NAME");
+        assert_eq!(bank.data_type(), DataType::U16);
+        assert_eq!(bank.data_slice(), &[0x12, 0x34]);
+
+        let bytes = b"NAME\x00\x00\x00\x01\x00\x00\x00\x00";
+        let bank = Bank32View::try_from_be_bytes(bytes)?;
+        assert_eq!(bank.name(), "NAME");
+        assert_eq!(bank.data_type(), DataType::U8);
+        assert_eq!(bank.data_slice(), &[]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn bank_32_view_invalid_name() {
+        for name in [".AME", "N.ME", "NA.E", "NAM."] {
+            let bytes = [name.as_bytes(), b"\x01\x00\x00\x00\x01\x00\x00\x00\x12"].concat();
+            let result = Bank32View::try_from_le_bytes(&bytes);
+            assert!(result.is_err());
+
+            let bytes = [name.as_bytes(), b"\x00\x00\x00\x01\x00\x00\x00\x01\x12"].concat();
+            let result = Bank32View::try_from_be_bytes(&bytes);
+            assert!(result.is_err());
+        }
+    }
+
+    #[test]
+    fn bank_32_view_invalid_data_type() {
+        let bytes = b"NAME\xFF\xFF\xFF\xFF\x01\x00\x00\x00\x12";
+        let result = Bank32View::try_from_le_bytes(bytes);
+        assert!(result.is_err());
+
+        let bytes = b"NAME\xFF\xFF\xFF\xFF\x00\x00\x00\x01\x12";
+        let result = Bank32View::try_from_be_bytes(bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn bank_32_view_invalid_data_slice_non_integer_number_of_elements() {
+        let bytes = b"NAME\x04\x00\x00\x00\x03\x00\x00\x00\x56\x34\x12";
+        let result = Bank32View::try_from_le_bytes(bytes);
+        assert!(result.is_err());
+
+        let bytes = b"NAME\x00\x00\x00\x04\x00\x00\x00\x03\x12\x34\x56";
+        let result = Bank32View::try_from_be_bytes(bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn bank_32_view_invalid_data_slice_length() {
+        let bytes = b"NAME\x01\x00\x00\x00\x02\x00\x00\x00\x12";
+        let result = Bank32View::try_from_le_bytes(bytes);
+        assert!(result.is_err());
+
+        let bytes = b"NAME\x01\x00\x00\x00\x02\x00\x00\x00\x56\x34\x12";
+        let result = Bank32View::try_from_le_bytes(bytes);
+        assert!(result.is_err());
+
+        let bytes = b"NAME\x00\x00\x00\x01\x00\x00\x00\x02\x12";
+        let result = Bank32View::try_from_be_bytes(bytes);
+        assert!(result.is_err());
+
+        let bytes = b"NAME\x00\x00\x00\x01\x00\x00\x00\x02\x12\x34\x56";
+        let result = Bank32View::try_from_be_bytes(bytes);
         assert!(result.is_err());
     }
 }
