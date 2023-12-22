@@ -838,4 +838,66 @@ mod tests {
         let result = Bank32AView::try_from_be_bytes(bytes);
         assert!(result.is_err());
     }
+
+    #[test]
+    fn bank_view_from_bank_16_view() -> Result<(), Box<dyn std::error::Error>> {
+        let bytes = b"NAME\x01\x00\x01\x00\xFF";
+        let bank: BankView = Bank16View::try_from_le_bytes(bytes)?.into();
+        assert_eq!(bank.name(), "NAME");
+        assert_eq!(bank.data_type(), DataType::U8);
+        assert_eq!(bank.data_slice(), &[0xFF]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn bank_view_from_bank_32_view() -> Result<(), Box<dyn std::error::Error>> {
+        let bytes = b"NAME\x01\x00\x00\x00\x01\x00\x00\x00\xFF";
+        let bank: BankView = Bank32View::try_from_le_bytes(bytes)?.into();
+        assert_eq!(bank.name(), "NAME");
+        assert_eq!(bank.data_type(), DataType::U8);
+        assert_eq!(bank.data_slice(), &[0xFF]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn bank_view_from_bank_32a_view() -> Result<(), Box<dyn std::error::Error>> {
+        let bytes = b"NAME\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\xFF";
+        let bank: BankView = Bank32AView::try_from_le_bytes(bytes)?.into();
+        assert_eq!(bank.name(), "NAME");
+        assert_eq!(bank.data_type(), DataType::U8);
+        assert_eq!(bank.data_slice(), &[0xFF]);
+
+        Ok(())
+    }
+
+    #[test]
+    fn bank_view_required_padding() -> Result<(), Box<dyn std::error::Error>> {
+        let mut bytes = b"NAME\x01\x00\x00\x00".to_vec();
+        let bank: BankView = Bank16View::try_from_le_bytes(&bytes)?.into();
+        assert_eq!(bank.required_padding(), 0);
+
+        for n in 1..=8 {
+            bytes[6] += 1;
+            bytes.push(0xFF);
+            let bank: BankView = Bank16View::try_from_le_bytes(&bytes)?.into();
+
+            assert_eq!(bank.required_padding(), 8 - n);
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn bank_view_into_iter() -> Result<(), Box<dyn std::error::Error>> {
+        let bytes = b"NAME\x04\x00\x04\x00\x12\x34\x56\x78";
+        let bank: BankView = Bank16View::try_from_le_bytes(bytes)?.into();
+        let mut iter = bank.into_iter();
+
+        assert_eq!(iter.next(), Some(&[0x12, 0x34][..]));
+        assert_eq!(iter.next(), Some(&[0x56, 0x78][..]));
+        assert_eq!(iter.next(), None);
+        Ok(())
+    }
 }
