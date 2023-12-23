@@ -184,3 +184,168 @@ impl<'a> IntoIterator for EventView<'a> {
         self.bank_views.into_iter()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn event_view_try_from_le_bytes() -> Result<(), Box<dyn std::error::Error>> {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
+        ];
+        let bank = b"NAME\x01\x00\x01\x00\xFF";
+        let padding = [0xFF; 7];
+
+        let bytes = [&header[..], bank, &padding].concat();
+        let event = EventView::try_from_le_bytes(&bytes)?;
+        assert_eq!(event.id(), 1);
+        assert_eq!(event.trigger_mask(), 2);
+        assert_eq!(event.serial_number(), 3);
+        assert_eq!(event.timestamp(), 4);
+
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+        ];
+        let event = EventView::try_from_le_bytes(&header)?;
+        assert_eq!(event.id(), 1);
+        assert_eq!(event.trigger_mask(), 2);
+        assert_eq!(event.serial_number(), 3);
+        assert_eq!(event.timestamp(), 4);
+
+        Ok(())
+    }
+
+    #[test]
+    fn event_view_try_from_be_bytes() -> Result<(), Box<dyn std::error::Error>> {
+        let header = [
+            0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
+        ];
+        let bank = b"NAME\x00\x01\x00\x01\xFF";
+        let padding = [0xFF; 7];
+
+        let bytes = [&header[..], bank, &padding].concat();
+        let event = EventView::try_from_be_bytes(&bytes)?;
+        assert_eq!(event.id(), 1);
+        assert_eq!(event.trigger_mask(), 2);
+        assert_eq!(event.serial_number(), 3);
+        assert_eq!(event.timestamp(), 4);
+
+        let header = [
+            0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 1,
+        ];
+        let event = EventView::try_from_be_bytes(&header)?;
+        assert_eq!(event.id(), 1);
+        assert_eq!(event.trigger_mask(), 2);
+        assert_eq!(event.serial_number(), 3);
+        assert_eq!(event.timestamp(), 4);
+
+        Ok(())
+    }
+
+    #[test]
+    fn event_view_with_bank_16_view() {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
+        ];
+        let bank = b"NAME\x01\x00\x01\x00\xFF";
+        let padding = [0; 7];
+
+        let bytes = [&header[..], bank, &padding].concat();
+        let result = EventView::try_from_le_bytes(&bytes);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn event_view_with_bank_32_view() {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 28, 0, 0, 0, 20, 0, 0, 0, 17, 0, 0, 0,
+        ];
+        let bank = b"NAME\x01\x00\x00\x00\x01\x00\x00\x00\xFF";
+        let padding = [0; 7];
+
+        let bytes = [&header[..], bank, &padding].concat();
+        let result = EventView::try_from_le_bytes(&bytes);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn event_view_with_bank_32a_view() {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 32, 0, 0, 0, 24, 0, 0, 0, 49, 0, 0, 0,
+        ];
+        let bank = b"NAME\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\xFF";
+        let padding = [0; 7];
+
+        let bytes = [&header[..], bank, &padding].concat();
+        let result = EventView::try_from_le_bytes(&bytes);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn event_view_invalid_flags() {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF,
+        ];
+        let bank = b"NAME\x01\x00\x01\x00\xFF";
+        let padding = [0; 7];
+
+        let bytes = [&header[..], bank, &padding].concat();
+        let result = EventView::try_from_le_bytes(&bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn event_view_invalid_all_data_banks_due_to_bad_padding() {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 17, 0, 0, 0, 9, 0, 0, 0, 1, 0, 0, 0,
+        ];
+        let bank = b"NAME\x01\x00\x01\x00\xFF";
+
+        let bytes = [&header[..], bank].concat();
+        let result = EventView::try_from_le_bytes(&bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn event_view_invalid_all_data_banks_due_to_bad_bank() {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
+        ];
+        let invalid_bank = b"NAME\x04\x00\x01\x00\xFF";
+        let padding = [0; 7];
+
+        let bytes = [&header[..], invalid_bank, &padding].concat();
+        let result = EventView::try_from_le_bytes(&bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn event_view_invalid_all_data_banks_due_to_remaining_bytes() {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 25, 0, 0, 0, 17, 0, 0, 0, 1, 0, 0, 0,
+        ];
+        let bank = b"NAME\x01\x00\x01\x00\xFF";
+        let padding = [0; 7];
+        let extra_byte = [0xFF; 1];
+
+        let bytes = [&header[..], bank, &padding, &extra_byte].concat();
+        let result = EventView::try_from_le_bytes(&bytes);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn event_view_into_iter() -> Result<(), Box<dyn std::error::Error>> {
+        let header = [
+            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 40, 0, 0, 0, 32, 0, 0, 0, 1, 0, 0, 0,
+        ];
+        let bank = b"NAME\x01\x00\x01\x00\xFF";
+        let padding = [0; 7];
+
+        let bytes = [&header[..], bank, &padding, bank, &padding].concat();
+        let event = EventView::try_from_le_bytes(&bytes)?;
+
+        assert_eq!(event.into_iter().count(), 2);
+        Ok(())
+    }
+}
