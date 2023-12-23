@@ -1,31 +1,39 @@
 # Midasio
 
-[![Test Status](https://github.com/DJDuque/midasio/actions/workflows/rust.yml/badge.svg)](https://github.com/DJDuque/midasio/actions/workflows/rust.yml)
+[![Test Status](https://github.com/MIDAS-rs/midasio/actions/workflows/rust.yml/badge.svg)](https://github.com/MIDAS-rs/midasio/actions/workflows/rust.yml)
 [![Crates.io](https://img.shields.io/crates/v/midasio?labelColor=383f47)](https://crates.io/crates/midasio)
 
-A Rust library for reading binary MIDAS files. Midasio provides a useful API to
-iterate over events, iterate over data banks, and extract the raw data from the
-data banks.
+A Rust library for reading binary MIDAS files.
 
-## Usage
+Midasio provides utilities to iterate over the MIDAS events in a file, iterate
+over the data banks in a MIDAS event, and extract the raw data from the banks.
 
-Add the following to your `Cargo.toml` file:
-```toml
-[dependencies]
-midasio = "0.4"
-```
-Reading a MIDAS file is as simple as:
-```rust
-use std::fs;
-use midasio::read::file::FileView;
+## Quick Start
 
-let contents = fs::read("example.mid")?;
-let file_view = FileView::try_from(&contents[..])?;
+To get you started quickly, the easiest and highest-level way to read a binary
+MIDAS file is from a [`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.html) 
+slice. Parsing and iterating over the contents of a file is as simple as:
 
-for event in file_view {
-    // Do something with each event in the file.
-    for bank in event {
-        // Do something with each data bank in the event.
+```rust no_run
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let contents = std::fs::read("example.mid")?;
+    let file_view = midasio::FileView::try_from(&contents[..])?;
+
+    for event_view in file_view {
+        // Do something with each event in the file.
+        for bank_view in event_view {
+            // Do something with each data bank in the event.
+        }
     }
+
+    Ok(())
 }
 ```
+
+## Feature flags
+
+
+- `rayon`: Implement [`rayon`](https://crates.io/crates/rayon)'s 
+`IntoParallelIterator` for `FileView`. This feature makes parallel analysis of
+MIDAS events very easy with the `FileView::par_iter` and
+`FileView::into_par_iter` methods.
