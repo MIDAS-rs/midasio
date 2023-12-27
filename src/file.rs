@@ -165,6 +165,10 @@ impl<'a> FileView<'a> {
     pub fn final_odb(&self) -> &'a [u8] {
         self.final_odb
     }
+    /// Return an iterator over the events in the file.
+    pub fn iter(&self) -> std::slice::Iter<'_, EventView<'a>> {
+        self.into_iter()
+    }
 }
 
 impl<'a, 'b> IntoIterator for &'b FileView<'a> {
