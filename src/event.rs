@@ -165,6 +165,10 @@ impl<'a> EventView<'a> {
     pub fn timestamp(&self) -> u32 {
         self.timestamp
     }
+    /// Return an iterator over the banks of the event.
+    pub fn iter(&self) -> std::slice::Iter<'_, BankView<'a>> {
+        self.into_iter()
+    }
 }
 
 impl<'a, 'b> IntoIterator for &'b EventView<'a> {
