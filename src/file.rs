@@ -1,9 +1,9 @@
 use crate::event::{event_view, EventView};
 use thiserror::Error;
 use winnow::binary::{le_u16, length_take, u16, u32, Endianness};
-use winnow::combinator::{delimited, dispatch, fail, repeat, seq, success};
+use winnow::combinator::{delimited, dispatch, fail, repeat, rest, seq, success};
 use winnow::error::{ContextError, PResult, ParseError, StrContext};
-use winnow::token::{take, take_while};
+use winnow::token::take;
 use winnow::Parser;
 
 #[cfg(feature = "rayon")]
@@ -238,7 +238,7 @@ pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromBytesErr
         delimited(
             take(2usize).context(StrContext::Label("magic midas marker")),
             u32(endianness).context(StrContext::Label("run number")),
-            take_while(0.., |_| true),
+            rest,
         )
         .parse_next(input)
     }
@@ -275,7 +275,7 @@ pub fn initial_timestamp_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromB
         delimited(
             take(6usize).context(StrContext::Label("magic midas marker or run number")),
             u32(endianness).context(StrContext::Label("initial timestamp")),
-            take_while(0.., |_| true),
+            rest,
         )
         .parse_next(input)
     }
