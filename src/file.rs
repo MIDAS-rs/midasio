@@ -26,7 +26,7 @@ struct InnerFileParseError {
 
 impl std::fmt::Display for InnerFileParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "parsing failed at byte offset `{}`", self.offset)?;
+        write!(f, "parsing stopped at byte offset `{}`", self.offset)?;
         if self.inner.context().next().is_some() {
             write!(f, " ({})", self.inner)?;
         }
