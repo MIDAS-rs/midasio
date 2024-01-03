@@ -11,8 +11,9 @@ over the data banks in a MIDAS event, and extract the raw data from the banks.
 ## Quick Start
 
 To get you started quickly, the easiest and highest-level way to read a binary
-MIDAS file is from a [`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.html) 
-slice. Parsing and iterating over the contents of a file is as simple as:
+MIDAS file is from a
+[`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.html). Parsing and
+iterating over the contents of a file is as simple as:
 
 ```rust no_run
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,7 +32,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 ## Feature flags
-
 
 - `rayon`: Implement [`rayon`](https://crates.io/crates/rayon)'s 
 `IntoParallelIterator` for `FileView`. This feature makes parallel analysis of
