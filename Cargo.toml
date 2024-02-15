@@ -13,7 +13,7 @@ documentation = "https://docs.rs/midasio"
 [dependencies]
 rayon = { version = "1.8.0", optional = true }
 thiserror = "1.0.50"
-winnow = "0.5.40"
+winnow = "0.6.1"
 
 [dev-dependencies]
 paste = "1.0.14"
