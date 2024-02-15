@@ -1,7 +1,7 @@
 use crate::data_bank::{bank_16_view, bank_32_view, bank_32a_view, BankView};
 use thiserror::Error;
 use winnow::binary::{length_and_then, u16, u32, Endianness};
-use winnow::combinator::{dispatch, eof, fail, repeat_till0, seq, success};
+use winnow::combinator::{dispatch, empty, eof, fail, repeat_till0, seq};
 use winnow::error::{ContextError, ParseError};
 use winnow::token::take;
 use winnow::Parser;
@@ -128,9 +128,9 @@ pub(crate) fn event_view<'a>(
             })
             .flat_map(|banks_size| {
                 dispatch! {u32(endian);
-                    1 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_16_view(endian)), eof)),
-                    17 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32_view(endian)), eof)),
-                    49 => length_and_then(success(banks_size), repeat_till0(padded_bank(bank_32a_view(endian)), eof)),
+                    1 => length_and_then(empty.value(banks_size), repeat_till0(padded_bank(bank_16_view(endian)), eof)),
+                    17 => length_and_then(empty.value(banks_size), repeat_till0(padded_bank(bank_32_view(endian)), eof)),
+                    49 => length_and_then(empty.value(banks_size), repeat_till0(padded_bank(bank_32a_view(endian)), eof)),
                     _ => fail,
                 }
             })

@@ -1,7 +1,7 @@
 use crate::event::{event_view, EventView};
 use thiserror::Error;
 use winnow::binary::{le_u16, length_take, u16, u32, Endianness};
-use winnow::combinator::{delimited, dispatch, fail, repeat, rest, seq, success};
+use winnow::combinator::{delimited, dispatch, empty, fail, repeat, rest, seq};
 use winnow::error::{ContextError, PResult, ParseError, StrContext};
 use winnow::token::take;
 use winnow::Parser;
@@ -93,8 +93,8 @@ const MAGIC: u16 = 0x494D;
 
 fn endian(input: &mut &[u8]) -> PResult<Endianness> {
     dispatch! {le_u16;
-        BOR_ID => success(Endianness::Little),
-        BOR_ID_SWAPPED => success(Endianness::Big),
+        BOR_ID => empty.value(Endianness::Little),
+        BOR_ID_SWAPPED => empty.value(Endianness::Big),
         _ => fail,
     }
     .parse_next(input)
