@@ -8,55 +8,19 @@ use winnow::stream::AsChar;
 use winnow::token::{take, take_while};
 use winnow::Parser;
 
-/// Possible data types stored inside a data bank
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum DataType {
-    /// Unsigned byte.
-    U8,
-    /// Signed byte.
-    I8,
-    /// Unsigned 16-bits integer.
-    U16,
-    /// Signed 16-bits integer.
-    I16,
-    /// Unsigned 32-bits integer.
-    U32,
-    /// Signed 32-bits integer.
-    I32,
-    /// Four bytes boolean.
-    Bool,
-    /// 32-bits floating-point number.
-    F32,
-    /// 64-bits floating-point number.
-    F64,
-    /// 32-bits bitfield.
-    Bit32,
-    /// Zero-terminated string.
-    Str,
-    /// User-defined structure with fixed size in bytes.
-    Struct,
-    /// Signed 64-bits integer.
-    I64,
-    /// Unsigned 64-bits integer.
-    U64,
-}
-
 impl DataType {
-    /// Returns the size of a [`DataType`] in bytes. Note that e.g.
-    /// [`DataType::Struct`] doesn't have a fixed known size.
+    /// Returns the size in bytes of an element of type [`DataType`].
     ///
     /// # Examples
     ///
     /// ```
-    /// use midasio::data_bank::DataType;
+    /// use midasio::DataType;
     ///
     /// assert_eq!(DataType::U8.size(), Some(1));
     /// assert!(DataType::Struct.size().is_none());
     /// ```
-    pub fn size(&self) -> Option<usize> {
+    fn size(&self) -> Option<usize> {
         match self {
-            // If you add a new type here, remember to add it as well in TryFrom
-            // unsigned below
             DataType::U8 => Some(size_of::<u8>()),
             DataType::I8 => Some(size_of::<i8>()),
             DataType::U16 => Some(size_of::<u16>()),
@@ -66,8 +30,8 @@ impl DataType {
             DataType::Bool => Some(4), // 4 bytes bool instead of normal 1 byte
             DataType::F32 => Some(size_of::<f32>()),
             DataType::F64 => Some(size_of::<f64>()),
-            DataType::Bit32 => Some(4), // 4 bytes = 32 bits
             DataType::Str => None,
+            DataType::Array => None,
             DataType::Struct => None,
             DataType::I64 => Some(size_of::<i64>()),
             DataType::U64 => Some(size_of::<u64>()),
@@ -103,12 +67,12 @@ macro_rules! impl_try_type_from {
                     8 => Ok(DataType::Bool),
                     9 => Ok(DataType::F32),
                     10 => Ok(DataType::F64),
-                    11 => Ok(DataType::Bit32),
+                    11 => Ok(DataType::U32),
                     12 => Ok(DataType::Str),
-                    // 13 missing. Array. What does that mean?
+                    13 => Ok(DataType::Array),
                     14 => Ok(DataType::Struct),
-                    // 15 missing. Key. What does that mean?
-                    // 16 missing. Link. What does that mean?
+                    15 => Ok(DataType::Str), // ODB Key
+                    16 => Ok(DataType::Str), // ODB Link
                     17 => Ok(DataType::I64),
                     18 => Ok(DataType::U64),
                     _ => Err(TryDataTypeFromUnsignedError {
@@ -126,85 +90,6 @@ macro_rules! impl_try_type_from {
 }
 impl_try_type_from!(u8, u16, u32, u64, u128);
 
-/// The error type returned when conversion from
-/// [`&[u8]`](https://doc.rust-lang.org/std/primitive.slice.html) to a
-/// [`BankView`] fails.
-#[derive(Debug, Error)]
-// I am still experimenting with the error type. This allows me to hide the
-// implementation details of the error type without breaking the public API.
-#[error(transparent)]
-pub struct TryBankViewFromBytesError(#[from] InnerBankParseError);
-
-#[derive(Debug)]
-struct InnerBankParseError {
-    offset: usize,
-    inner: ContextError,
-}
-
-impl std::fmt::Display for InnerBankParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "parsing stopped at byte offset `{}`", self.offset)?;
-        if self.inner.context().next().is_some() {
-            write!(f, " ({})", self.inner)?;
-        }
-        Ok(())
-    }
-}
-
-impl std::error::Error for InnerBankParseError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        self.inner
-            .cause()
-            .map(|v| v as &(dyn std::error::Error + 'static))
-    }
-}
-
-#[doc(hidden)]
-impl<I> From<ParseError<I, ContextError>> for TryBankViewFromBytesError {
-    fn from(e: ParseError<I, ContextError>) -> Self {
-        Self(InnerBankParseError {
-            offset: e.offset(),
-            inner: e.into_inner(),
-        })
-    }
-}
-
-/// An immutable view to a 16-bit data bank.
-///
-/// A 16-bit data bank is defined as an 8 bytes header followed by its raw data.
-/// The binary representation of a [`Bank16View`] is:
-///
-/// <center>
-///
-/// |Byte Offset|Size (in bytes)|Description|
-/// |:-:|:-:|:-:|
-/// |0|4|Bank name (ASCII alphanumeric)|
-/// |4|2|Data type (see [`DataType`])|
-/// |6|2|Data size (`n`)|
-/// |8|`n`|Raw data byte slice|
-///
-/// </center>
-///
-/// # Examples
-///
-/// ```
-/// use midasio::data_bank::{DataType, Bank16View};
-///
-/// let bytes = b"BANK\x01\x00\x03\x00\xFF\xFF\xFF";
-/// let bank = Bank16View::try_from_le_bytes(bytes)?;
-///
-/// assert_eq!(bank.name(), "BANK");
-/// assert_eq!(bank.data_type(), DataType::U8);
-/// assert_eq!(bank.data_slice(), &[0xFF, 0xFF, 0xFF]);
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-#[derive(Clone, Copy, Debug)]
-pub struct Bank16View<'a> {
-    name: &'a str,
-    data_type: DataType,
-    data_slice: &'a [u8],
-}
-
 pub(crate) fn bank_16_view<'a>(
     endian: Endianness,
 ) -> impl Parser<&'a [u8], Bank16View<'a>, ContextError> {
@@ -216,70 +101,6 @@ pub(crate) fn bank_16_view<'a>(
         data_slice: length_take(u16(endian))
             .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0),
     }}
-}
-
-impl<'a> Bank16View<'a> {
-    /// Create a native view to the underlying data bank from its representation
-    /// as a byte slice in little endian.
-    pub fn try_from_le_bytes(bytes: &'a [u8]) -> Result<Self, TryBankViewFromBytesError> {
-        Ok(bank_16_view(Endianness::Little).parse(bytes)?)
-    }
-    /// Create a native view to the underlying data bank from its representation
-    /// as a byte slice in big endian.
-    pub fn try_from_be_bytes(bytes: &'a [u8]) -> Result<Self, TryBankViewFromBytesError> {
-        Ok(bank_16_view(Endianness::Big).parse(bytes)?)
-    }
-    /// Return the name of the data bank. This is guaranteed to be 4 ASCII
-    /// alphanumeric characters.
-    pub fn name(&self) -> &'a str {
-        self.name
-    }
-    /// Return the data type of the bank. For a complete list of data types see
-    /// [`DataType`].
-    pub fn data_type(&self) -> DataType {
-        self.data_type
-    }
-    /// Return the raw data of the data. This does not include the header nor
-    /// any padding bytes.
-    pub fn data_slice(&self) -> &'a [u8] {
-        self.data_slice
-    }
-}
-
-/// An immutable view to a 32-bit data bank.
-///
-/// A 32-bit data bank is defined as a 12 bytes header followed by its raw data.
-/// The binary representation of a [`Bank32View`] is:
-///
-/// <center>
-///
-/// |Byte Offset|Size (in bytes)|Description|
-/// |:-:|:-:|:-:|
-/// |0|4|Bank name (ASCII alphanumeric)|
-/// |4|4|Data type (see [`DataType`])|
-/// |8|4|Data size (`n`)|
-/// |12|`n`|Raw data byte slice|
-///
-/// </center>
-///
-/// # Examples
-///
-/// ```
-/// use midasio::data_bank::{DataType, Bank32View};
-///
-/// let bytes = b"BANK\x01\x00\x00\x00\x03\x00\x00\x00\xFF\xFF\xFF";
-/// let bank = Bank32View::try_from_le_bytes(bytes)?;
-///
-/// assert_eq!(bank.name(), "BANK");
-/// assert_eq!(bank.data_type(), DataType::U8);
-/// assert_eq!(bank.data_slice(), &[0xFF, 0xFF, 0xFF]);
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-#[derive(Clone, Copy, Debug)]
-pub struct Bank32View<'a> {
-    name: &'a str,
-    data_type: DataType,
-    data_slice: &'a [u8],
 }
 
 pub(crate) fn bank_32_view<'a>(
@@ -295,71 +116,6 @@ pub(crate) fn bank_32_view<'a>(
     }}
 }
 
-impl<'a> Bank32View<'a> {
-    /// Create a native view to the underlying data bank from its representation
-    /// as a byte slice in little endian.
-    pub fn try_from_le_bytes(bytes: &'a [u8]) -> Result<Self, TryBankViewFromBytesError> {
-        Ok(bank_32_view(Endianness::Little).parse(bytes)?)
-    }
-    /// Create a native view to the underlying data bank from its representation
-    /// as a byte slice in big endian.
-    pub fn try_from_be_bytes(bytes: &'a [u8]) -> Result<Self, TryBankViewFromBytesError> {
-        Ok(bank_32_view(Endianness::Big).parse(bytes)?)
-    }
-    /// Return the name of the data bank. This is guaranteed to be 4 ASCII
-    /// alphanumeric characters.
-    pub fn name(&self) -> &'a str {
-        self.name
-    }
-    /// Return the data type of the bank. For a complete list of data types see
-    /// [`DataType`].
-    pub fn data_type(&self) -> DataType {
-        self.data_type
-    }
-    /// Return the raw data of the bank. This does not include the header nor
-    /// any padding bytes.
-    pub fn data_slice(&self) -> &'a [u8] {
-        self.data_slice
-    }
-}
-
-/// An immutable view to a 32-bit bank 64-bit aligned.
-///
-/// A 32-bit data bank is defined as a 16 bytes header followed by its raw data.
-/// The binary representation of a [`Bank32AView`] is:
-///
-/// <center>
-///
-/// |Byte Offset|Size (in bytes)|Description|
-/// |:-:|:-:|:-:|
-/// |0|4|Bank name (ASCII alphanumeric)|
-/// |4|4|Data type (see [`DataType`])|
-/// |8|4|Data size (`n`)|
-/// |12|4|Reserved|
-/// |16|`n`|Raw data byte slice|
-///
-/// </center>
-///
-/// # Examples
-///
-/// ```
-/// use midasio::data_bank::{DataType, Bank32AView};
-///
-/// let bytes = b"BANK\x01\x00\x00\x00\x03\x00\x00\x00\x01\x23\x45\x67\xFF\xFF\xFF";
-/// let bank = Bank32AView::try_from_le_bytes(bytes)?;
-///
-/// assert_eq!(bank.name(), "BANK");
-/// assert_eq!(bank.data_type(), DataType::U8);
-/// assert_eq!(bank.data_slice(), &[0xFF, 0xFF, 0xFF]);
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-#[derive(Clone, Copy, Debug)]
-pub struct Bank32AView<'a> {
-    name: &'a str,
-    data_type: DataType,
-    data_slice: &'a [u8],
-}
-
 pub(crate) fn bank_32a_view<'a>(
     endian: Endianness,
 ) -> impl Parser<&'a [u8], Bank32AView<'a>, ContextError> {
@@ -371,137 +127,6 @@ pub(crate) fn bank_32a_view<'a>(
         data_slice: length_take(terminated(u32(endian), take(4usize)))
             .verify(|b: &[u8]| b.len() % data_type.size().unwrap_or(1) == 0),
     }}
-}
-
-impl<'a> Bank32AView<'a> {
-    /// Create a native view to the underlying data bank from its representation
-    /// as a byte slice in little endian.
-    pub fn try_from_le_bytes(bytes: &'a [u8]) -> Result<Self, TryBankViewFromBytesError> {
-        Ok(bank_32a_view(Endianness::Little).parse(bytes)?)
-    }
-    /// Create a native view to the underlying data bank from its representation
-    /// as a byte slice in big endian.
-    pub fn try_from_be_bytes(bytes: &'a [u8]) -> Result<Self, TryBankViewFromBytesError> {
-        Ok(bank_32a_view(Endianness::Big).parse(bytes)?)
-    }
-    /// Return the name of the data bank. This is guaranteed to be 4 ASCII
-    /// alphanumeric characters.
-    pub fn name(&self) -> &'a str {
-        self.name
-    }
-    /// Return the data type of the bank. For a complete list of data types see
-    /// [`DataType`].
-    pub fn data_type(&self) -> DataType {
-        self.data_type
-    }
-    /// Return the raw data of the bank. This does not include the header nor
-    /// any padding bytes.
-    pub fn data_slice(&self) -> &'a [u8] {
-        self.data_slice
-    }
-}
-
-/// An immutable view to a data bank.
-///
-/// This enum can contain either a [`Bank16View`], a [`Bank32View`], or a
-/// [`Bank32AView`]. See their respective documentation for more details.
-#[derive(Clone, Copy, Debug)]
-pub enum BankView<'a> {
-    /// A 16-bit bank.
-    B16(Bank16View<'a>),
-    /// A 32-bit bank.
-    B32(Bank32View<'a>),
-    /// A 32-bit bank 64-bit aligned.
-    B32A(Bank32AView<'a>),
-}
-
-impl<'a> From<Bank16View<'a>> for BankView<'a> {
-    fn from(bank: Bank16View<'a>) -> Self {
-        Self::B16(bank)
-    }
-}
-impl<'a> From<Bank32View<'a>> for BankView<'a> {
-    fn from(bank: Bank32View<'a>) -> Self {
-        Self::B32(bank)
-    }
-}
-impl<'a> From<Bank32AView<'a>> for BankView<'a> {
-    fn from(bank: Bank32AView<'a>) -> Self {
-        Self::B32A(bank)
-    }
-}
-
-impl<'a> BankView<'a> {
-    /// Return the name of the data bank. This is guaranteed to be 4 ASCII
-    /// alphanumeric characters.
-    pub fn name(&self) -> &'a str {
-        match self {
-            BankView::B16(bank) => bank.name(),
-            BankView::B32(bank) => bank.name(),
-            BankView::B32A(bank) => bank.name(),
-        }
-    }
-    /// Return the data type of the bank. For a complete list of data types see
-    /// [`DataType`].
-    pub fn data_type(&self) -> DataType {
-        match self {
-            BankView::B16(bank) => bank.data_type(),
-            BankView::B32(bank) => bank.data_type(),
-            BankView::B32A(bank) => bank.data_type(),
-        }
-    }
-    /// Return the raw data of the bank. This does not include the header nor
-    /// any padding bytes.
-    pub fn data_slice(&self) -> &'a [u8] {
-        match self {
-            BankView::B16(bank) => bank.data_slice(),
-            BankView::B32(bank) => bank.data_slice(),
-            BankView::B32A(bank) => bank.data_slice(),
-        }
-    }
-    /// In a MIDAS file, data banks are padded to a multiple of 8 bytes. This
-    /// method returns the number of padding bytes that would be required to
-    /// make the data area of this bank a multiple of 8 bytes.
-    pub fn required_padding(&self) -> usize {
-        const BANK_DATA_ALIGNMENT: usize = 8;
-        let remainder = self.data_slice().len() % BANK_DATA_ALIGNMENT;
-        if remainder == 0 {
-            0
-        } else {
-            BANK_DATA_ALIGNMENT - remainder
-        }
-    }
-}
-
-impl<'a> IntoIterator for BankView<'a> {
-    /// The type of elements being iterated over. The length of each slice is
-    /// fixed to [`DataType::size`].
-    type Item = &'a [u8];
-    type IntoIter = ChunksExact<'a, u8>;
-    /// Returns an iterator over the [`BankView::data_slice`] in chunks of
-    /// [`DataType::size`]. Iterate over individual bytes if the data type size
-    /// is [`None`].
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use midasio::data_bank::{Bank16View, BankView};
-    ///
-    /// let bytes = b"BANK\x04\x00\x04\x00\xFF\xFF\xFF\xFF";
-    /// let bank = BankView::B16(Bank16View::try_from_le_bytes(bytes)?);
-    ///
-    /// assert_eq!(bank.into_iter().count(), 2);
-    /// for u16_slice in bank {
-    ///     assert_eq!(u16_slice, &[0xFF, 0xFF]);
-    /// }
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    fn into_iter(self) -> Self::IntoIter {
-        //If the underlying object e.g. struct doesn't have a fixed size,
-        //iterate over individual bytes.
-        let item_size = self.data_type().size().unwrap_or(1);
-        self.data_slice().chunks_exact(item_size)
-    }
 }
 
 #[cfg(test)]
@@ -523,7 +148,7 @@ mod tests {
                     assert_eq!(DataType::try_from([<8 $num_type>])?, DataType::Bool);
                     assert_eq!(DataType::try_from([<9 $num_type>])?, DataType::F32);
                     assert_eq!(DataType::try_from([<10 $num_type>])?, DataType::F64);
-                    assert_eq!(DataType::try_from([<11 $num_type>])?, DataType::Bit32);
+                    assert_eq!(DataType::try_from([<11 $num_type>])?, DataType::U32);
                     assert_eq!(DataType::try_from([<12 $num_type>])?, DataType::Str);
                     // TID_ARRAY. Not supported yet.
                     assert!(DataType::try_from([<13 $num_type>]).is_err());
@@ -560,8 +185,8 @@ mod tests {
         assert_eq!(DataType::Bool.size(), Some(4));
         assert_eq!(DataType::F32.size(), Some(4));
         assert_eq!(DataType::F64.size(), Some(8));
-        assert_eq!(DataType::Bit32.size(), Some(4));
         assert_eq!(DataType::Str.size(), None);
+        assert_eq!(DataType::Array.size(), None);
         assert_eq!(DataType::Struct.size(), None);
         assert_eq!(DataType::I64.size(), Some(8));
         assert_eq!(DataType::U64.size(), Some(8));
