@@ -269,3 +269,131 @@ pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
 pub fn initial_timestamp_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
     todo!()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::iter::repeat;
+
+    fn bank_16(name: [u8; 4], data_type: u16, data: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        let mut bytes_le = Vec::new();
+        bytes_le.extend(&name);
+        bytes_le.extend(data_type.to_le_bytes());
+        bytes_le.extend((data.len() as u16).to_le_bytes());
+        bytes_le.extend(data);
+        bytes_le.extend(repeat(0).take(data.len().next_multiple_of(8) - data.len()));
+
+        let mut bytes_be = bytes_le.clone();
+        bytes_be[4..6].copy_from_slice(&data_type.to_be_bytes());
+        bytes_be[6..8].copy_from_slice(&(data.len() as u16).to_be_bytes());
+
+        (bytes_le, bytes_be)
+    }
+
+    fn bank_32(name: [u8; 4], data_type: u32, data: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        let mut bytes_le = Vec::new();
+        bytes_le.extend(&name);
+        bytes_le.extend(data_type.to_le_bytes());
+        bytes_le.extend((data.len() as u32).to_le_bytes());
+        bytes_le.extend(data);
+        bytes_le.extend(repeat(0).take(data.len().next_multiple_of(8) - data.len()));
+
+        let mut bytes_be = bytes_le.clone();
+        bytes_be[4..8].copy_from_slice(&data_type.to_be_bytes());
+        bytes_be[8..12].copy_from_slice(&(data.len() as u32).to_be_bytes());
+
+        (bytes_le, bytes_be)
+    }
+
+    fn bank_32a(name: [u8; 4], data_type: u32, data: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        let mut bytes_le = Vec::new();
+        bytes_le.extend(&name);
+        bytes_le.extend(data_type.to_le_bytes());
+        bytes_le.extend((data.len() as u32).to_le_bytes());
+        bytes_le.extend(repeat(0).take(4));
+        bytes_le.extend(data);
+        bytes_le.extend(repeat(0).take(data.len().next_multiple_of(8) - data.len()));
+
+        let mut bytes_be = bytes_le.clone();
+        bytes_be[4..8].copy_from_slice(&data_type.to_be_bytes());
+        bytes_be[8..12].copy_from_slice(&(data.len() as u32).to_be_bytes());
+
+        (bytes_le, bytes_be)
+    }
+
+    fn event(
+        id: u16,
+        trigger_mask: u16,
+        serial_number: u32,
+        timestamp: u32,
+        flags: u32,
+        banks: &[u8],
+    ) -> (Vec<u8>, Vec<u8>) {
+        let mut bytes_le = Vec::new();
+        bytes_le.extend(id.to_le_bytes());
+        bytes_le.extend(trigger_mask.to_le_bytes());
+        bytes_le.extend(serial_number.to_le_bytes());
+        bytes_le.extend(timestamp.to_le_bytes());
+        bytes_le.extend(((banks.len() as u32).checked_add(8).unwrap()).to_le_bytes());
+        bytes_le.extend((banks.len() as u32).to_le_bytes());
+        bytes_le.extend(flags.to_le_bytes());
+        bytes_le.extend(banks);
+
+        let mut bytes_be = Vec::new();
+        bytes_be.extend(id.to_be_bytes());
+        bytes_be.extend(trigger_mask.to_be_bytes());
+        bytes_be.extend(serial_number.to_be_bytes());
+        bytes_be.extend(timestamp.to_be_bytes());
+        bytes_be.extend(((banks.len() as u32).checked_add(8).unwrap()).to_be_bytes());
+        bytes_be.extend((banks.len() as u32).to_be_bytes());
+        bytes_be.extend(flags.to_be_bytes());
+        bytes_be.extend(banks);
+
+        (bytes_le, bytes_be)
+    }
+
+    fn file(
+        run_number: u32,
+        initial_timestamp: u32,
+        initial_odb: &[u8],
+        events: &[u8],
+        final_timestamp: u32,
+        final_odb: &[u8],
+    ) -> (Vec<u8>, Vec<u8>) {
+        let bor_id: u16 = 0x8000;
+        let magic: u16 = 0x494D;
+        let eor_id: u16 = 0x8001;
+
+        let mut bytes_le = Vec::new();
+        bytes_le.extend(bor_id.to_le_bytes());
+        bytes_le.extend(magic.to_le_bytes());
+        bytes_le.extend(run_number.to_le_bytes());
+        bytes_le.extend(initial_timestamp.to_le_bytes());
+        bytes_le.extend((initial_odb.len() as u32).to_le_bytes());
+        bytes_le.extend(initial_odb);
+        bytes_le.extend(events);
+        bytes_le.extend(eor_id.to_le_bytes());
+        bytes_le.extend(magic.to_le_bytes());
+        bytes_le.extend(run_number.to_le_bytes());
+        bytes_le.extend(final_timestamp.to_le_bytes());
+        bytes_le.extend((final_odb.len() as u32).to_le_bytes());
+        bytes_le.extend(final_odb);
+
+        let mut bytes_be = Vec::new();
+        bytes_be.extend(bor_id.to_be_bytes());
+        bytes_be.extend(magic.to_be_bytes());
+        bytes_be.extend(run_number.to_be_bytes());
+        bytes_be.extend(initial_timestamp.to_be_bytes());
+        bytes_be.extend((initial_odb.len() as u32).to_be_bytes());
+        bytes_be.extend(initial_odb);
+        bytes_be.extend(events);
+        bytes_be.extend(eor_id.to_be_bytes());
+        bytes_be.extend(magic.to_be_bytes());
+        bytes_be.extend(run_number.to_be_bytes());
+        bytes_be.extend(final_timestamp.to_be_bytes());
+        bytes_be.extend((final_odb.len() as u32).to_be_bytes());
+        bytes_be.extend(final_odb);
+
+        (bytes_le, bytes_be)
+    }
+}
