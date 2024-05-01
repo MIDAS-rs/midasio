@@ -130,54 +130,6 @@ pub fn initial_timestamp_unchecked(bytes: &[u8]) -> Result<u32, TryFileViewFromB
 mod tests {
     use super::*;
 
-    fn le_file_bytes_example() -> Vec<u8> {
-        let initial_dump =
-            b"\x00\x80\x4D\x49\x01\x00\x00\x00\x02\x00\x00\x00\x0C\x00\x00\x00initial dump";
-        let event_header = [
-            1, 0, 2, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0,
-        ];
-        let padded_bank = b"NAME\x01\x00\x01\x00\xFF\x00\x00\x00\x00\x00\x00\x00";
-        let final_dump =
-            b"\x01\x80\x4D\x49\x01\x00\x00\x00\x03\x00\x00\x00\x0A\x00\x00\x00final dump";
-
-        [&initial_dump[..], &event_header, padded_bank, final_dump]
-            .concat()
-            .to_vec()
-    }
-
-    #[test]
-    fn file_view_try_from_le_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = le_file_bytes_example();
-        let file = FileView::try_from_bytes(&bytes[..])?;
-        assert_eq!(file.run_number(), 1);
-        assert_eq!(file.initial_timestamp(), 2);
-        assert_eq!(file.initial_odb(), b"initial dump");
-        assert_eq!(file.final_timestamp(), 3);
-        assert_eq!(file.final_odb(), b"final dump");
-        Ok(())
-    }
-
-    #[test]
-    fn file_view_try_from_be_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let initial_dump =
-            b"\x80\x00\x49\x4D\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00\x0Cinitial dump";
-        let event_header = [
-            0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 16, 0, 0, 0, 1,
-        ];
-        let padded_bank = b"NAME\x00\x01\x00\x01\xFF\x00\x00\x00\x00\x00\x00\x00";
-        let final_dump =
-            b"\x80\x01\x49\x4D\x00\x00\x00\x01\x00\x00\x00\x03\x00\x00\x00\x0Afinal dump";
-
-        let bytes = [&initial_dump[..], &event_header, padded_bank, final_dump].concat();
-        let file = FileView::try_from_bytes(&bytes[..])?;
-        assert_eq!(file.run_number(), 1);
-        assert_eq!(file.initial_timestamp(), 2);
-        assert_eq!(file.initial_odb(), b"initial dump");
-        assert_eq!(file.final_timestamp(), 3);
-        assert_eq!(file.final_odb(), b"final dump");
-        Ok(())
-    }
-
     #[test]
     fn file_view_invalid_bor_marker() {
         let mut bytes = le_file_bytes_example();
@@ -221,15 +173,6 @@ mod tests {
         bytes[5] = 0xFF;
         let result = FileView::try_from_bytes(&bytes[..]);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn file_view_into_iter() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = le_file_bytes_example();
-        let file = FileView::try_from_bytes(&bytes[..])?;
-
-        assert_eq!(file.into_iter().count(), 1);
-        Ok(())
     }
 
     #[test]

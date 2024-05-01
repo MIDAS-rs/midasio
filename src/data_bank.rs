@@ -193,53 +193,6 @@ mod tests {
     }
 
     #[test]
-    fn bank_16_view_try_from_le_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x04\x00\x02\x00\x34\x12";
-        let bank = Bank16View::try_from_le_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U16);
-        assert_eq!(bank.data_slice(), &[0x34, 0x12]);
-
-        let bytes = b"NAME\x01\x00\x00\x00";
-        let bank = Bank16View::try_from_le_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_16_view_try_from_be_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x00\x04\x00\x02\x12\x34";
-        let bank = Bank16View::try_from_be_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U16);
-        assert_eq!(bank.data_slice(), &[0x12, 0x34]);
-
-        let bytes = b"NAME\x00\x01\x00\x00";
-        let bank = Bank16View::try_from_be_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_16_view_invalid_name() {
-        for name in [".AME", "N.ME", "NA.E", "NAM."] {
-            let bytes = [name.as_bytes(), b"\x04\x00\x02\x00\x34\x12"].concat();
-            let result = Bank16View::try_from_le_bytes(&bytes);
-            assert!(result.is_err());
-
-            let bytes = [name.as_bytes(), b"\x00\x04\x00\x02\x12\x34"].concat();
-            let result = Bank16View::try_from_be_bytes(&bytes);
-            assert!(result.is_err());
-        }
-    }
-
-    #[test]
     fn bank_16_view_invalid_data_type() {
         let bytes = b"NAME\xFF\xFF\x02\x00\x34\x12";
         let result = Bank16View::try_from_le_bytes(bytes);
@@ -278,53 +231,6 @@ mod tests {
         let bytes = b"NAME\x00\x01\x00\x02\x12\x34\x56";
         let result = Bank16View::try_from_be_bytes(bytes);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn bank_32_view_try_from_le_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x04\x00\x00\x00\x02\x00\x00\x00\x34\x12";
-        let bank = Bank32View::try_from_le_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U16);
-        assert_eq!(bank.data_slice(), &[0x34, 0x12]);
-
-        let bytes = b"NAME\x01\x00\x00\x00\x00\x00\x00\x00";
-        let bank = Bank32View::try_from_le_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_32_view_try_from_be_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x00\x00\x00\x04\x00\x00\x00\x02\x12\x34";
-        let bank = Bank32View::try_from_be_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U16);
-        assert_eq!(bank.data_slice(), &[0x12, 0x34]);
-
-        let bytes = b"NAME\x00\x00\x00\x01\x00\x00\x00\x00";
-        let bank = Bank32View::try_from_be_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_32_view_invalid_name() {
-        for name in [".AME", "N.ME", "NA.E", "NAM."] {
-            let bytes = [name.as_bytes(), b"\x01\x00\x00\x00\x01\x00\x00\x00\x12"].concat();
-            let result = Bank32View::try_from_le_bytes(&bytes);
-            assert!(result.is_err());
-
-            let bytes = [name.as_bytes(), b"\x00\x00\x00\x01\x00\x00\x00\x01\x12"].concat();
-            let result = Bank32View::try_from_be_bytes(&bytes);
-            assert!(result.is_err());
-        }
     }
 
     #[test]
@@ -369,61 +275,6 @@ mod tests {
     }
 
     #[test]
-    fn bank_32a_view_try_from_le_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x04\x00\x00\x00\x02\x00\x00\x00\xFF\xFF\xFF\xFF\x34\x12";
-        let bank = Bank32AView::try_from_le_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U16);
-        assert_eq!(bank.data_slice(), &[0x34, 0x12]);
-
-        let bytes = b"NAME\x01\x00\x00\x00\x00\x00\x00\x00\xFF\xFF\xFF\xFF";
-        let bank = Bank32AView::try_from_le_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_32a_view_try_from_be_bytes() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x00\x00\x00\x04\x00\x00\x00\x02\xFF\xFF\xFF\xFF\x12\x34";
-        let bank = Bank32AView::try_from_be_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U16);
-        assert_eq!(bank.data_slice(), &[0x12, 0x34]);
-
-        let bytes = b"NAME\x00\x00\x00\x01\x00\x00\x00\x00\xFF\xFF\xFF\xFF";
-        let bank = Bank32AView::try_from_be_bytes(bytes)?;
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_32a_view_invalid_name() {
-        for name in [".AME", "N.ME", "NA.E", "NAM."] {
-            let bytes = [
-                name.as_bytes(),
-                b"\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x12",
-            ]
-            .concat();
-            let result = Bank32AView::try_from_le_bytes(&bytes);
-            assert!(result.is_err());
-
-            let bytes = [
-                name.as_bytes(),
-                b"\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x12",
-            ]
-            .concat();
-            let result = Bank32AView::try_from_be_bytes(&bytes);
-            assert!(result.is_err());
-        }
-    }
-
-    #[test]
     fn bank_32a_view_invalid_data_type() {
         let bytes = b"NAME\xFF\xFF\xFF\xFF\x01\x00\x00\x00\x00\x00\x00\x00\x12";
         let result = Bank32AView::try_from_le_bytes(bytes);
@@ -462,67 +313,5 @@ mod tests {
         let bytes = b"NAME\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00\x00\x12\x34\x56";
         let result = Bank32AView::try_from_be_bytes(bytes);
         assert!(result.is_err());
-    }
-
-    #[test]
-    fn bank_view_from_bank_16_view() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x01\x00\x01\x00\xFF";
-        let bank: BankView = Bank16View::try_from_le_bytes(bytes)?.into();
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[0xFF]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_view_from_bank_32_view() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x01\x00\x00\x00\x01\x00\x00\x00\xFF";
-        let bank: BankView = Bank32View::try_from_le_bytes(bytes)?.into();
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[0xFF]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_view_from_bank_32a_view() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\xFF";
-        let bank: BankView = Bank32AView::try_from_le_bytes(bytes)?.into();
-        assert_eq!(bank.name(), "NAME");
-        assert_eq!(bank.data_type(), DataType::U8);
-        assert_eq!(bank.data_slice(), &[0xFF]);
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_view_required_padding() -> Result<(), Box<dyn std::error::Error>> {
-        let mut bytes = b"NAME\x01\x00\x00\x00".to_vec();
-        let bank: BankView = Bank16View::try_from_le_bytes(&bytes)?.into();
-        assert_eq!(bank.required_padding(), 0);
-
-        for n in 1..=8 {
-            bytes[6] += 1;
-            bytes.push(0xFF);
-            let bank: BankView = Bank16View::try_from_le_bytes(&bytes)?.into();
-
-            assert_eq!(bank.required_padding(), 8 - n);
-        }
-
-        Ok(())
-    }
-
-    #[test]
-    fn bank_view_into_iter() -> Result<(), Box<dyn std::error::Error>> {
-        let bytes = b"NAME\x04\x00\x04\x00\x12\x34\x56\x78";
-        let bank: BankView = Bank16View::try_from_le_bytes(bytes)?.into();
-        let mut iter = bank.into_iter();
-
-        assert_eq!(iter.next(), Some(&[0x12, 0x34][..]));
-        assert_eq!(iter.next(), Some(&[0x56, 0x78][..]));
-        assert_eq!(iter.next(), None);
-        Ok(())
     }
 }
