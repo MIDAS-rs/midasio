@@ -279,6 +279,27 @@ mod tests {
     const EOR_ID: u16 = 0x8001;
     const MAGIC: u16 = 0x494D;
 
+    const INT_DATA_TYPES: [(u16, DataType); 18] = [
+        (1, DataType::U8),
+        (2, DataType::I8),
+        (3, DataType::U8),
+        (4, DataType::U16),
+        (5, DataType::I16),
+        (6, DataType::U32),
+        (7, DataType::I32),
+        (8, DataType::Bool),
+        (9, DataType::F32),
+        (10, DataType::F64),
+        (11, DataType::U32),
+        (12, DataType::Str),
+        (13, DataType::Array),
+        (14, DataType::Struct),
+        (15, DataType::Str),
+        (16, DataType::Str),
+        (17, DataType::I64),
+        (18, DataType::U64),
+    ];
+
     fn bank_16_le(name: [u8; 4], data_type: u16, data: &[u8]) -> Vec<u8> {
         let mut bytes = vec![0; 8 + data.len().next_multiple_of(8)];
         bytes[..4].copy_from_slice(&name);
@@ -781,5 +802,95 @@ mod tests {
         assert_eq!(file_view.final_timestamp(), 3);
         assert_eq!(file_view.final_odb(), b"");
         assert_eq!(file_view.into_iter().count(), 0);
+    }
+
+    #[test]
+    fn file_view_data_type_bank_16_le() {
+        for (n, data_type) in INT_DATA_TYPES {
+            let bank = bank_16_le([65; 4], n, &[0; 100]);
+            let events = event_le(0, 0, 0, 0, 1, &bank);
+            let file = file_le(0, 0, b"", &events, 0, b"");
+            let file_view = FileView::try_from_bytes(&file).unwrap();
+
+            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.data_type(), data_type);
+        }
+    }
+
+    #[test]
+    fn file_view_data_type_bank_16_be() {
+        for (n, data_type) in INT_DATA_TYPES {
+            let bank = bank_16_be([65; 4], n, &[0; 100]);
+            let events = event_be(0, 0, 0, 0, 1, &bank);
+            let file = file_be(0, 0, b"", &events, 0, b"");
+            let file_view = FileView::try_from_bytes(&file).unwrap();
+
+            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.data_type(), data_type);
+        }
+    }
+
+    #[test]
+    fn file_view_data_type_bank_32_le() {
+        for (n, data_type) in INT_DATA_TYPES {
+            let bank = bank_32_le([65; 4], n.into(), &[0; 100]);
+            let events = event_le(0, 0, 0, 0, 17, &bank);
+            let file = file_le(0, 0, b"", &events, 0, b"");
+            let file_view = FileView::try_from_bytes(&file).unwrap();
+
+            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.data_type(), data_type);
+        }
+    }
+
+    #[test]
+    fn file_view_data_type_bank_32_be() {
+        for (n, data_type) in INT_DATA_TYPES {
+            let bank = bank_32_be([65; 4], n.into(), &[0; 100]);
+            let events = event_be(0, 0, 0, 0, 17, &bank);
+            let file = file_be(0, 0, b"", &events, 0, b"");
+            let file_view = FileView::try_from_bytes(&file).unwrap();
+
+            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.data_type(), data_type);
+        }
+    }
+
+    #[test]
+    fn file_view_data_type_bank_32a_le() {
+        for (n, data_type) in INT_DATA_TYPES {
+            let bank = bank_32a_le([65; 4], n.into(), &[0; 100]);
+            let events = event_le(0, 0, 0, 0, 49, &bank);
+            let file = file_le(0, 0, b"", &events, 0, b"");
+            let file_view = FileView::try_from_bytes(&file).unwrap();
+
+            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.data_type(), data_type);
+        }
+    }
+
+    #[test]
+    fn file_view_data_type_bank_32a_be() {
+        for (n, data_type) in INT_DATA_TYPES {
+            let bank = bank_32a_be([65; 4], n.into(), &[0; 100]);
+            let events = event_be(0, 0, 0, 0, 49, &bank);
+            let file = file_be(0, 0, b"", &events, 0, b"");
+            let file_view = FileView::try_from_bytes(&file).unwrap();
+
+            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.data_type(), data_type);
+        }
     }
 }
