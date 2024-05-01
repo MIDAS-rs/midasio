@@ -807,90 +807,398 @@ mod tests {
     #[test]
     fn file_view_data_type_bank_16_le() {
         for (n, data_type) in INT_DATA_TYPES {
-            let bank = bank_16_le([65; 4], n, &[0; 100]);
-            let events = event_le(0, 0, 0, 0, 1, &bank);
-            let file = file_le(0, 0, b"", &events, 0, b"");
+            let bank = bank_16_le([65; 4], n, &[]);
+            let events = event_le(4, 5, 6, 7, 1, &bank);
+            let file = file_le(1, 2, b"initial", &events, 3, b"final");
             let file_view = FileView::try_from_bytes(&file).unwrap();
 
-            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+            assert_eq!(file_view.run_number(), 1);
+            assert_eq!(file_view.initial_timestamp(), 2);
+            assert_eq!(file_view.initial_odb(), b"initial");
+            assert_eq!(file_view.final_timestamp(), 3);
+            assert_eq!(file_view.final_odb(), b"final");
+            let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
                 panic!()
             };
+            assert_eq!(event_view.id(), 4);
+            assert_eq!(event_view.trigger_mask(), 5);
+            assert_eq!(event_view.serial_number(), 6);
+            assert_eq!(event_view.timestamp(), 7);
+            let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.name(), [65; 4]);
             assert_eq!(bank_view.data_type(), data_type);
+            assert!(bank_view.data().is_empty());
         }
     }
 
     #[test]
     fn file_view_data_type_bank_16_be() {
         for (n, data_type) in INT_DATA_TYPES {
-            let bank = bank_16_be([65; 4], n, &[0; 100]);
-            let events = event_be(0, 0, 0, 0, 1, &bank);
-            let file = file_be(0, 0, b"", &events, 0, b"");
+            let bank = bank_16_be([65; 4], n, &[]);
+            let events = event_be(4, 5, 6, 7, 1, &bank);
+            let file = file_be(1, 2, b"initial", &events, 3, b"final");
             let file_view = FileView::try_from_bytes(&file).unwrap();
 
-            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+            assert_eq!(file_view.run_number(), 1);
+            assert_eq!(file_view.initial_timestamp(), 2);
+            assert_eq!(file_view.initial_odb(), b"initial");
+            assert_eq!(file_view.final_timestamp(), 3);
+            assert_eq!(file_view.final_odb(), b"final");
+            let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
                 panic!()
             };
+            assert_eq!(event_view.id(), 4);
+            assert_eq!(event_view.trigger_mask(), 5);
+            assert_eq!(event_view.serial_number(), 6);
+            assert_eq!(event_view.timestamp(), 7);
+            let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.name(), [65; 4]);
             assert_eq!(bank_view.data_type(), data_type);
+            assert!(bank_view.data().is_empty());
         }
     }
 
     #[test]
     fn file_view_data_type_bank_32_le() {
         for (n, data_type) in INT_DATA_TYPES {
-            let bank = bank_32_le([65; 4], n.into(), &[0; 100]);
-            let events = event_le(0, 0, 0, 0, 17, &bank);
-            let file = file_le(0, 0, b"", &events, 0, b"");
+            let bank = bank_32_le([65; 4], n.into(), &[]);
+            let events = event_le(4, 5, 6, 7, 17, &bank);
+            let file = file_le(1, 2, b"initial", &events, 3, b"final");
             let file_view = FileView::try_from_bytes(&file).unwrap();
 
-            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+            assert_eq!(file_view.run_number(), 1);
+            assert_eq!(file_view.initial_timestamp(), 2);
+            assert_eq!(file_view.initial_odb(), b"initial");
+            assert_eq!(file_view.final_timestamp(), 3);
+            assert_eq!(file_view.final_odb(), b"final");
+            let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
                 panic!()
             };
+            assert_eq!(event_view.id(), 4);
+            assert_eq!(event_view.trigger_mask(), 5);
+            assert_eq!(event_view.serial_number(), 6);
+            assert_eq!(event_view.timestamp(), 7);
+            let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.name(), [65; 4]);
             assert_eq!(bank_view.data_type(), data_type);
+            assert!(bank_view.data().is_empty());
         }
     }
 
     #[test]
     fn file_view_data_type_bank_32_be() {
         for (n, data_type) in INT_DATA_TYPES {
-            let bank = bank_32_be([65; 4], n.into(), &[0; 100]);
-            let events = event_be(0, 0, 0, 0, 17, &bank);
-            let file = file_be(0, 0, b"", &events, 0, b"");
+            let bank = bank_32_be([65; 4], n.into(), &[]);
+            let events = event_be(4, 5, 6, 7, 17, &bank);
+            let file = file_be(1, 2, b"initial", &events, 3, b"final");
             let file_view = FileView::try_from_bytes(&file).unwrap();
 
-            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+            assert_eq!(file_view.run_number(), 1);
+            assert_eq!(file_view.initial_timestamp(), 2);
+            assert_eq!(file_view.initial_odb(), b"initial");
+            assert_eq!(file_view.final_timestamp(), 3);
+            assert_eq!(file_view.final_odb(), b"final");
+            let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
                 panic!()
             };
+            assert_eq!(event_view.id(), 4);
+            assert_eq!(event_view.trigger_mask(), 5);
+            assert_eq!(event_view.serial_number(), 6);
+            assert_eq!(event_view.timestamp(), 7);
+            let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.name(), [65; 4]);
             assert_eq!(bank_view.data_type(), data_type);
+            assert!(bank_view.data().is_empty());
         }
     }
 
     #[test]
     fn file_view_data_type_bank_32a_le() {
         for (n, data_type) in INT_DATA_TYPES {
-            let bank = bank_32a_le([65; 4], n.into(), &[0; 100]);
-            let events = event_le(0, 0, 0, 0, 49, &bank);
-            let file = file_le(0, 0, b"", &events, 0, b"");
+            let bank = bank_32a_le([65; 4], n.into(), &[]);
+            let events = event_le(4, 5, 6, 7, 49, &bank);
+            let file = file_le(1, 2, b"initial", &events, 3, b"final");
             let file_view = FileView::try_from_bytes(&file).unwrap();
 
-            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+            assert_eq!(file_view.run_number(), 1);
+            assert_eq!(file_view.initial_timestamp(), 2);
+            assert_eq!(file_view.initial_odb(), b"initial");
+            assert_eq!(file_view.final_timestamp(), 3);
+            assert_eq!(file_view.final_odb(), b"final");
+            let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
                 panic!()
             };
+            assert_eq!(event_view.id(), 4);
+            assert_eq!(event_view.trigger_mask(), 5);
+            assert_eq!(event_view.serial_number(), 6);
+            assert_eq!(event_view.timestamp(), 7);
+            let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.name(), [65; 4]);
             assert_eq!(bank_view.data_type(), data_type);
+            assert!(bank_view.data().is_empty());
         }
     }
 
     #[test]
     fn file_view_data_type_bank_32a_be() {
         for (n, data_type) in INT_DATA_TYPES {
-            let bank = bank_32a_be([65; 4], n.into(), &[0; 100]);
-            let events = event_be(0, 0, 0, 0, 49, &bank);
-            let file = file_be(0, 0, b"", &events, 0, b"");
+            let bank = bank_32a_be([65; 4], n.into(), &[]);
+            let events = event_be(4, 5, 6, 7, 49, &bank);
+            let file = file_be(1, 2, b"initial", &events, 3, b"final");
             let file_view = FileView::try_from_bytes(&file).unwrap();
 
-            let [bank_view] = file_view.into_iter().flatten().collect::<Vec<_>>()[..] else {
+            assert_eq!(file_view.run_number(), 1);
+            assert_eq!(file_view.initial_timestamp(), 2);
+            assert_eq!(file_view.initial_odb(), b"initial");
+            assert_eq!(file_view.final_timestamp(), 3);
+            assert_eq!(file_view.final_odb(), b"final");
+            let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
                 panic!()
             };
+            assert_eq!(event_view.id(), 4);
+            assert_eq!(event_view.trigger_mask(), 5);
+            assert_eq!(event_view.serial_number(), 6);
+            assert_eq!(event_view.timestamp(), 7);
+            let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+                panic!()
+            };
+            assert_eq!(bank_view.name(), [65; 4]);
             assert_eq!(bank_view.data_type(), data_type);
+            assert!(bank_view.data().is_empty());
         }
+    }
+
+    #[test]
+    fn file_view_bank_32a_non_zero_reserved_le() {
+        let mut bank = bank_32a_le([65; 4], 1, &[2; 100]);
+        bank[12..16].copy_from_slice(&[0xFF; 4]);
+        let events = event_le(3, 4, 5, 6, 49, &bank);
+        let file = file_le(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_32a_non_zero_reserved_be() {
+        let mut bank = bank_32a_be([65; 4], 1, &[2; 100]);
+        bank[12..16].copy_from_slice(&[0xFF; 4]);
+        let events = event_be(3, 4, 5, 6, 49, &bank);
+        let file = file_be(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_16_non_zero_padding_le() {
+        let mut bank = bank_16_le([65; 4], 1, &[2; 100]);
+        bank[108..112].copy_from_slice(&[0xFF; 4]);
+        let events = event_le(3, 4, 5, 6, 1, &bank);
+        let file = file_le(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_16_non_zero_padding_be() {
+        let mut bank = bank_16_be([65; 4], 1, &[2; 100]);
+        bank[108..112].copy_from_slice(&[0xFF; 4]);
+        let events = event_be(3, 4, 5, 6, 1, &bank);
+        let file = file_be(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_32_non_zero_padding_le() {
+        let mut bank = bank_32_le([65; 4], 1, &[2; 100]);
+        bank[112..116].copy_from_slice(&[0xFF; 4]);
+        let events = event_le(3, 4, 5, 6, 17, &bank);
+        let file = file_le(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_32_non_zero_padding_be() {
+        let mut bank = bank_32_be([65; 4], 1, &[2; 100]);
+        bank[112..116].copy_from_slice(&[0xFF; 4]);
+        let events = event_be(3, 4, 5, 6, 17, &bank);
+        let file = file_be(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_32a_non_zero_padding_le() {
+        let mut bank = bank_32a_le([65; 4], 1, &[2; 100]);
+        bank[116..120].copy_from_slice(&[0xFF; 4]);
+        let events = event_le(3, 4, 5, 6, 49, &bank);
+        let file = file_le(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_32a_non_zero_padding_be() {
+        let mut bank = bank_32a_be([65; 4], 1, &[2; 100]);
+        bank[116..120].copy_from_slice(&[0xFF; 4]);
+        let events = event_be(3, 4, 5, 6, 49, &bank);
+        let file = file_be(7, 8, b"initial", &events, 9, b"final");
+        let file_view = FileView::try_from_bytes(&file).unwrap();
+
+        assert_eq!(file_view.run_number(), 7);
+        assert_eq!(file_view.initial_timestamp(), 8);
+        assert_eq!(file_view.initial_odb(), b"initial");
+        assert_eq!(file_view.final_timestamp(), 9);
+        assert_eq!(file_view.final_odb(), b"final");
+        let [ref event_view] = file_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(event_view.id(), 3);
+        assert_eq!(event_view.trigger_mask(), 4);
+        assert_eq!(event_view.serial_number(), 5);
+        assert_eq!(event_view.timestamp(), 6);
+        let [bank_view] = event_view.into_iter().collect::<Vec<_>>()[..] else {
+            panic!()
+        };
+        assert_eq!(bank_view.name(), [65; 4]);
+        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data(), &[2; 100]);
     }
 }
