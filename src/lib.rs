@@ -486,8 +486,7 @@ mod tests {
                 bank_count += 1;
                 assert_eq!(bank_view.name(), [65; 4]);
                 assert_eq!(bank_view.data_type(), DataType::I8);
-                assert_eq!(bank_view.data().len(), 100);
-                assert!(bank_view.data().iter().all(|&v| v == 2));
+                assert_eq!(bank_view.data(), &[2; 100]);
             }
         }
         assert_eq!(event_count, 3);
@@ -536,8 +535,7 @@ mod tests {
                 bank_count += 1;
                 assert_eq!(bank_view.name(), [65; 4]);
                 assert_eq!(bank_view.data_type(), DataType::I8);
-                assert_eq!(bank_view.data().len(), 100);
-                assert!(bank_view.data().iter().all(|&v| v == 2));
+                assert_eq!(bank_view.data(), &[2; 100]);
             }
         }
         assert_eq!(event_count, 3);
@@ -1200,5 +1198,293 @@ mod tests {
         assert_eq!(bank_view.name(), [65; 4]);
         assert_eq!(bank_view.data_type(), DataType::I8);
         assert_eq!(bank_view.data(), &[2; 100]);
+    }
+
+    #[test]
+    fn file_view_bank_16_invalid_data_type_le() {
+        let bank = bank_16_le([65; 4], 0, &[]);
+        let events = event_le(0, 0, 0, 0, 1, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_16_invalid_data_type_be() {
+        let bank = bank_16_be([65; 4], 0, &[]);
+        let events = event_be(0, 0, 0, 0, 1, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32_invalid_data_type_le() {
+        let bank = bank_32_le([65; 4], 0, &[]);
+        let events = event_le(0, 0, 0, 0, 17, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32_invalid_data_type_be() {
+        let bank = bank_32_be([65; 4], 0, &[]);
+        let events = event_be(0, 0, 0, 0, 17, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32a_invalid_data_type_le() {
+        let bank = bank_32a_le([65; 4], 0, &[]);
+        let events = event_le(0, 0, 0, 0, 49, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32a_invalid_data_type_be() {
+        let bank = bank_32a_be([65; 4], 0, &[]);
+        let events = event_be(0, 0, 0, 0, 49, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_16_non_integer_data_elements_le() {
+        let bank = bank_16_le([65; 4], 4, &[0; 99]);
+        let events = event_le(0, 0, 0, 0, 1, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_16_non_integer_data_elements_be() {
+        let bank = bank_16_be([65; 4], 4, &[0; 99]);
+        let events = event_be(0, 0, 0, 0, 1, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32_non_integer_data_elements_le() {
+        let bank = bank_32_le([65; 4], 4, &[0; 99]);
+        let events = event_le(0, 0, 0, 0, 17, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32_non_integer_data_elements_be() {
+        let bank = bank_32_be([65; 4], 4, &[0; 99]);
+        let events = event_be(0, 0, 0, 0, 17, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32a_non_integer_data_elements_le() {
+        let bank = bank_32a_le([65; 4], 4, &[0; 99]);
+        let events = event_le(0, 0, 0, 0, 49, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_bank_32a_non_integer_data_elements_be() {
+        let bank = bank_32a_be([65; 4], 4, &[0; 99]);
+        let events = event_be(0, 0, 0, 0, 49, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_event_16_bad_bank_le() {
+        let mut bank = bank_16_le([65; 4], 1, &[0; 100]);
+        bank[6..8].copy_from_slice(&96u16.to_le_bytes());
+        let events = event_le(0, 0, 0, 0, 1, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_event_16_bad_bank_be() {
+        let mut bank = bank_16_be([65; 4], 1, &[0; 100]);
+        bank[6..8].copy_from_slice(&96u16.to_be_bytes());
+        let events = event_be(0, 0, 0, 0, 1, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_event_32_bad_bank_le() {
+        let mut bank = bank_32_le([65; 4], 1, &[0; 100]);
+        bank[8..12].copy_from_slice(&96u32.to_le_bytes());
+        let events = event_le(0, 0, 0, 0, 17, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_event_32_bad_bank_be() {
+        let mut bank = bank_32_be([65; 4], 1, &[0; 100]);
+        bank[8..12].copy_from_slice(&96u32.to_be_bytes());
+        let events = event_be(0, 0, 0, 0, 17, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_event_32a_bad_bank_le() {
+        let mut bank = bank_32a_le([65; 4], 1, &[0; 100]);
+        bank[8..12].copy_from_slice(&96u32.to_le_bytes());
+        let events = event_le(0, 0, 0, 0, 49, &bank);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_event_32a_bad_bank_be() {
+        let mut bank = bank_32a_be([65; 4], 1, &[0; 100]);
+        bank[8..12].copy_from_slice(&96u32.to_be_bytes());
+        let events = event_be(0, 0, 0, 0, 49, &bank);
+        let file = file_be(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_event_flags_le() {
+        let events = event_le(0, 0, 0, 0, 0, &[]);
+        let file = file_le(0, 0, b"", &events, 0, b"");
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_bor_le() {
+        let mut file = file_le(0, 0, b"", &[], 0, b"");
+        file[0..2].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_bor_be() {
+        let mut file = file_be(0, 0, b"", &[], 0, b"");
+        file[0..2].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_initial_magic_le() {
+        let mut file = file_le(0, 0, b"", &[], 0, b"");
+        file[2..4].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_initial_magic_be() {
+        let mut file = file_be(0, 0, b"", &[], 0, b"");
+        file[2..4].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_run_number_mismatch_le() {
+        let mut file = file_le(0, 0, b"", &[], 0, b"");
+        file[4..8].copy_from_slice(&[0xFF; 4]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_run_number_mismatch_be() {
+        let mut file = file_be(0, 0, b"", &[], 0, b"");
+        file[4..8].copy_from_slice(&[0xFF; 4]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_eor_le() {
+        let mut file = file_le(0, 0, b"", &[], 0, b"");
+        file[16..18].copy_from_slice(&[0, 0]);
+        dbg!(&file);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_eor_be() {
+        let mut file = file_be(0, 0, b"", &[], 0, b"");
+        file[16..18].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_final_magic_le() {
+        let mut file = file_le(0, 0, b"", &[], 0, b"");
+        file[18..20].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_invalid_final_magic_be() {
+        let mut file = file_be(0, 0, b"", &[], 0, b"");
+        file[18..20].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn run_number_unchecked_le() {
+        let bytes = b"\x00\x80\xFF\xFF\x01\x00\x00\x00\xFF";
+        assert_eq!(run_number_unchecked(bytes).unwrap(), 1);
+    }
+
+    #[test]
+    fn run_number_unchecked_be() {
+        let bytes = b"\x80\x00\xFF\xFF\x00\x00\x00\x01\xFF";
+        assert_eq!(run_number_unchecked(bytes).unwrap(), 1);
+    }
+
+    #[test]
+    fn run_number_unchecked_invalid_bor_marker() {
+        let bytes = b"\xFF\xFF\xFF\xFF\x01\x00\x00\x00";
+        assert!(run_number_unchecked(bytes).is_err());
+    }
+
+    #[test]
+    fn run_number_unchecked_invalid_run_number_le() {
+        let bytes = b"\x00\x80\xFF\xFF\x12\x34\x56";
+        assert!(run_number_unchecked(bytes).is_err());
+    }
+
+    #[test]
+    fn run_number_unchecked_invalid_run_number_be() {
+        let bytes = b"\x80\x00\xFF\xFF\x12\x34\x56";
+        assert!(run_number_unchecked(bytes).is_err());
+    }
+
+    #[test]
+    fn initial_timestamp_unchecked_le() {
+        let bytes = b"\x00\x80\xFF\xFF\xFF\xFF\xFF\xFF\x01\x00\x00\x00\xFF";
+        assert_eq!(initial_timestamp_unchecked(bytes).unwrap(), 1);
+    }
+
+    #[test]
+    fn initial_timestamp_unchecked_be() {
+        let bytes = b"\x80\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x00\x00\x01\xFF";
+        assert_eq!(initial_timestamp_unchecked(bytes).unwrap(), 1);
+    }
+
+    #[test]
+    fn initial_timestamp_unchecked_invalid_bor_marker() {
+        let bytes = b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x01\x00\x00\x00";
+        assert!(initial_timestamp_unchecked(bytes).is_err());
+    }
+
+    #[test]
+    fn initial_timestamp_unchecked_invalid_timestamp_le() {
+        let bytes = b"\x00\x80\xFF\xFF\xFF\xFF\xFF\xFF\x12\x34\x56";
+        assert!(initial_timestamp_unchecked(bytes).is_err());
+    }
+
+    #[test]
+    fn initial_timestamp_unchecked_invalid_timestamp_be() {
+        let bytes = b"\x80\x00\xFF\xFF\xFF\xFF\xFF\xFF\x12\x34\x56";
+        assert!(initial_timestamp_unchecked(bytes).is_err());
     }
 }
