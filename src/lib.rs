@@ -1,14 +1,22 @@
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![doc = include_str!("../README.md")]
 
+use winnow::binary::u32;
+use winnow::combinator::{delimited, rest};
+use winnow::error::{ContextError, PResult, StrContext};
+use winnow::token::take;
+use winnow::Parser;
+
 #[cfg(feature = "rayon")]
 use rayon::iter::IntoParallelRefIterator;
+
+mod parse;
 
 /// The error type returned when parsing a MIDAS file fails.
 #[derive(Debug)]
 pub struct ParseError {
     offset: usize,
-    inner: winnow::error::ContextError,
+    inner: ContextError,
 }
 
 impl std::fmt::Display for ParseError {
@@ -156,7 +164,10 @@ impl<'a> FileView<'a> {
     /// Create a native view to the underlying file from its representation as a
     /// byte slice.
     pub fn try_from_bytes(bytes: &'a [u8]) -> Result<Self, ParseError> {
-        todo!()
+        parse::file_view.parse(bytes).map_err(|e| ParseError {
+            offset: e.offset(),
+            inner: e.into_inner(),
+        })
     }
     /// Returns the run number of the file.
     pub fn run_number(&self) -> u32 {
@@ -243,7 +254,22 @@ impl<'a, 'b> rayon::iter::IntoParallelIterator for &'b FileView<'a> {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
-    todo!()
+    fn run_number(input: &mut &[u8]) -> PResult<u32> {
+        let endianness = parse::endianness
+            .context(StrContext::Label("begin-of-run id"))
+            .parse_next(input)?;
+        delimited(
+            take(2usize).context(StrContext::Label("magic marker")),
+            u32(endianness).context(StrContext::Label("run number")),
+            rest,
+        )
+        .parse_next(input)
+    }
+
+    run_number.parse(bytes).map_err(|e| ParseError {
+        offset: e.offset(),
+        inner: e.into_inner(),
+    })
 }
 
 /// Returns the timestamp of the initial ODB dump assuming the correct MIDAS
@@ -267,7 +293,22 @@ pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn initial_timestamp_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
-    todo!()
+    fn initial_timestamp(input: &mut &[u8]) -> PResult<u32> {
+        let endianness = parse::endianness
+            .context(StrContext::Label("begin-of-run id"))
+            .parse_next(input)?;
+        delimited(
+            take(6usize).context(StrContext::Label("magic marker and run number")),
+            u32(endianness).context(StrContext::Label("initial timestamp")),
+            rest,
+        )
+        .parse_next(input)
+    }
+
+    initial_timestamp.parse(bytes).map_err(|e| ParseError {
+        offset: e.offset(),
+        inner: e.into_inner(),
+    })
 }
 
 #[cfg(test)]
@@ -485,7 +526,7 @@ mod tests {
             for bank_view in event_view {
                 bank_count += 1;
                 assert_eq!(bank_view.name(), [65; 4]);
-                assert_eq!(bank_view.data_type(), DataType::I8);
+                assert_eq!(bank_view.data_type(), DataType::U8);
                 assert_eq!(bank_view.data(), &[2; 100]);
             }
         }
@@ -534,7 +575,7 @@ mod tests {
             for bank_view in event_view {
                 bank_count += 1;
                 assert_eq!(bank_view.name(), [65; 4]);
-                assert_eq!(bank_view.data_type(), DataType::I8);
+                assert_eq!(bank_view.data_type(), DataType::U8);
                 assert_eq!(bank_view.data(), &[2; 100]);
             }
         }
@@ -565,7 +606,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert!(bank_view.data().is_empty());
     }
 
@@ -592,7 +633,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert!(bank_view.data().is_empty());
     }
 
@@ -619,7 +660,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert!(bank_view.data().is_empty());
     }
 
@@ -646,7 +687,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert!(bank_view.data().is_empty());
     }
 
@@ -673,7 +714,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert!(bank_view.data().is_empty());
     }
 
@@ -700,7 +741,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert!(bank_view.data().is_empty());
     }
 
@@ -1000,7 +1041,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1028,7 +1069,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1056,7 +1097,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1084,7 +1125,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1112,7 +1153,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1140,7 +1181,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1168,7 +1209,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1196,7 +1237,7 @@ mod tests {
             panic!()
         };
         assert_eq!(bank_view.name(), [65; 4]);
-        assert_eq!(bank_view.data_type(), DataType::I8);
+        assert_eq!(bank_view.data_type(), DataType::U8);
         assert_eq!(bank_view.data(), &[2; 100]);
     }
 
@@ -1425,6 +1466,20 @@ mod tests {
     fn file_view_invalid_final_magic_be() {
         let mut file = file_be(0, 0, b"", &[], 0, b"");
         file[18..20].copy_from_slice(&[0, 0]);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_extra_bytes_le() {
+        let mut file = file_le(0, 0, b"", &[], 0, b"");
+        file.push(0);
+        assert!(FileView::try_from_bytes(&file).is_err());
+    }
+
+    #[test]
+    fn file_view_extra_bytes_be() {
+        let mut file = file_be(0, 0, b"", &[], 0, b"");
+        file.push(0);
         assert!(FileView::try_from_bytes(&file).is_err());
     }
 
