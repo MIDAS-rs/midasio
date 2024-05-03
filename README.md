@@ -31,6 +31,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+More examples with common use cases can be found
+[here](https://github.com/MIDAS-rs/midasio/tree/main/examples).
+
 ## Feature flags
 
 - `rayon`: Implement [`rayon`](https://crates.io/crates/rayon)'s 
