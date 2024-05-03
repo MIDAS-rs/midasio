@@ -18,7 +18,7 @@ iterating over the contents of a file is as simple as:
 ```rust no_run
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let contents = std::fs::read("example.mid")?;
-    let file_view = midasio::FileView::try_from(&contents[..])?;
+    let file_view = midasio::FileView::try_from_bytes(&contents)?;
 
     for event_view in file_view {
         // Do something with each event in the file.
@@ -30,6 +30,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+More examples with common use cases can be found
+[here](https://github.com/MIDAS-rs/midasio/tree/main/examples).
 
 ## Feature flags
 
