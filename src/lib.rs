@@ -1445,7 +1445,6 @@ mod tests {
     fn file_view_invalid_eor_le() {
         let mut file = file_le(0, 0, b"", &[], 0, b"");
         file[16..18].copy_from_slice(&[0, 0]);
-        dbg!(&file);
         assert!(FileView::try_from_bytes(&file).is_err());
     }
 
