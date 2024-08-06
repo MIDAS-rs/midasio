@@ -35,5 +35,7 @@ cargo release --execute --no-publish --no-tag --allow-branch=$NEW_BRANCH $NEW_VE
 # Step 6: Release from the main branch
 git checkout main
 git pull
-cargo release --execute
+cargo release publish --execute
+cargo release tag --execute
+cargo release push --execute
 ```
