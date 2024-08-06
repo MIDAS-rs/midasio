@@ -39,6 +39,7 @@ impl std::error::Error for ParseError {
 
 /// Possible data types stored inside a data bank.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum DataType {
     /// Unsigned byte.
     U8,
