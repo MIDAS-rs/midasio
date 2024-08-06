@@ -8,5 +8,9 @@ changes will be documented in this file.
 
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+- The `DataType` enum has been marked as non-exhaustive.
+
 <!-- next-url -->
 [Unreleased]: https://github.com/MIDAS-rs/midasio/compare/v0.6.0...HEAD
