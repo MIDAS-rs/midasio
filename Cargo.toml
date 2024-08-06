@@ -1,6 +1,6 @@
 [package]
 name = "midasio"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 license = "MIT"
 description = "Utilities to read binary files in the MIDAS format"
@@ -21,8 +21,8 @@ rustdoc-args = ["--cfg", "docsrs"]
 [package.metadata.release]
 pre-release-replacements = [
   {file="CHANGELOG.md", search="Unreleased", replace="{{version}}"},
-  {file="CHANGELOG.md", search="\\.\\.\\.HEAD", replace="...{{tag_name}}", exactly=1},
+  {file="CHANGELOG.md", search="\\.\\.\\.HEAD", replace="...v{{version}}", exactly=1},
   {file="CHANGELOG.md", search="ReleaseDate", replace="{{date}}"},
   {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n\n## [Unreleased] - ReleaseDate", exactly=1},
-  {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/MIDAS-rs/midasio/compare/{{tag_name}}...HEAD", exactly=1},
+  {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/MIDAS-rs/midasio/compare/v{{version}}...HEAD", exactly=1},
 ]
