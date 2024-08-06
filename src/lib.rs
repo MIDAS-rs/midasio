@@ -39,6 +39,7 @@ impl std::error::Error for ParseError {
 
 /// Possible data types stored inside a data bank.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum DataType {
     /// Unsigned byte.
     U8,
@@ -1444,7 +1445,6 @@ mod tests {
     fn file_view_invalid_eor_le() {
         let mut file = file_le(0, 0, b"", &[], 0, b"");
         file[16..18].copy_from_slice(&[0, 0]);
-        dbg!(&file);
         assert!(FileView::try_from_bytes(&file).is_err());
     }
 

@@ -37,6 +37,6 @@ More examples with common use cases can be found
 ## Feature flags
 
 - `rayon`: Implement [`rayon`](https://crates.io/crates/rayon)'s 
-`IntoParallelIterator` for `FileView`. This feature makes parallel analysis of
-MIDAS events very easy with the `FileView::par_iter` and
-`FileView::into_par_iter` methods.
+  `IntoParallelIterator` for `FileView`. This feature makes parallel analysis of
+  MIDAS events very easy with the `FileView::par_iter` and
+  `FileView::into_par_iter` methods.
