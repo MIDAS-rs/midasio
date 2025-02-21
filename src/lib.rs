@@ -3,7 +3,7 @@
 
 use winnow::binary::u32;
 use winnow::combinator::delimited;
-use winnow::error::{ContextError, ModalResult, StrContext};
+use winnow::error::{ContextError, StrContext};
 use winnow::token::{rest, take};
 use winnow::Parser;
 
@@ -255,7 +255,7 @@ impl<'a, 'b> rayon::iter::IntoParallelIterator for &'b FileView<'a> {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
-    fn run_number(input: &mut &[u8]) -> ModalResult<u32> {
+    fn run_number(input: &mut &[u8]) -> winnow::Result<u32> {
         let endianness = parse::endianness
             .context(StrContext::Label("begin-of-run id"))
             .parse_next(input)?;
@@ -294,7 +294,7 @@ pub fn run_number_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn initial_timestamp_unchecked(bytes: &[u8]) -> Result<u32, ParseError> {
-    fn initial_timestamp(input: &mut &[u8]) -> ModalResult<u32> {
+    fn initial_timestamp(input: &mut &[u8]) -> winnow::Result<u32> {
         let endianness = parse::endianness
             .context(StrContext::Label("begin-of-run id"))
             .parse_next(input)?;
