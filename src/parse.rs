@@ -2,7 +2,7 @@ use crate::{BankView, DataType, EventView, FileView};
 use std::mem::size_of;
 use winnow::binary::{le_u16, length_and_then, length_take, u16, u32, Endianness};
 use winnow::combinator::{dispatch, empty, eof, fail, repeat, repeat_till, seq, terminated};
-use winnow::error::{ContextError, PResult, StrContext};
+use winnow::error::{ContextError, StrContext};
 use winnow::token::take;
 use winnow::Parser;
 
@@ -121,7 +121,7 @@ const BOR_ID_SWAPPED: u16 = BOR_ID.swap_bytes();
 const EOR_ID: u16 = 0x8001;
 const MAGIC: u16 = 0x494D;
 
-pub(crate) fn endianness(input: &mut &[u8]) -> PResult<Endianness> {
+pub(crate) fn endianness(input: &mut &[u8]) -> winnow::Result<Endianness> {
     dispatch! {le_u16;
         BOR_ID => empty.value(Endianness::Little),
         BOR_ID_SWAPPED => empty.value(Endianness::Big),
@@ -130,7 +130,7 @@ pub(crate) fn endianness(input: &mut &[u8]) -> PResult<Endianness> {
     .parse_next(input)
 }
 
-pub(crate) fn file_view<'a>(input: &mut &'a [u8]) -> PResult<FileView<'a>> {
+pub(crate) fn file_view<'a>(input: &mut &'a [u8]) -> winnow::Result<FileView<'a>> {
     let endianness = endianness
         .context(StrContext::Label("begin-of-run id"))
         .parse_next(input)?;
