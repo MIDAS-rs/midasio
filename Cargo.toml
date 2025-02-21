@@ -12,7 +12,7 @@ documentation = "https://docs.rs/midasio"
 
 [dependencies]
 rayon = { version = "1.8.0", optional = true }
-winnow = "0.6.1"
+winnow = "0.6.26"
 
 [package.metadata.docs.rs]
 all-features = true
